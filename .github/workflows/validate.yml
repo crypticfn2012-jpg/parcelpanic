@@ -36,6 +36,32 @@ jobs:
           grep -q 'gameplayStart' src/crazygames.js
           grep -q 'requestAd' src/crazygames.js
 
+  browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local static server
+        run: |
+          node scripts/serve-smoke.cjs > /tmp/parcel-panic-server.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/parcel-panic-server.log
+          exit 1
+      - name: Test the game in Chromium
+        run: node scripts/browser-smoke.cjs
+
   deploy:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
