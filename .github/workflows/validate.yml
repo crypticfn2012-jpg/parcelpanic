@@ -1,0 +1,51 @@
+name: Parcel Panic validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check src/game.js
+          node --check src/crazygames.js
+      - name: Check required game entry points
+        run: |
+          test -s index.html
+          test -s src/style.css
+          grep -q 'crazygames-sdk-v3.js' index.html
+          grep -q 'gameplayStart' src/crazygames.js
+          grep -q 'requestAd' src/crazygames.js
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: validate
+    environment:
+      name: github-pages
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

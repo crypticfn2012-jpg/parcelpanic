@@ -1,321 +1,155 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Parcel Panic</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
-<style>
-:root{--ink:#fff;--panel:rgba(14,9,40,.8);--pink:#ff3d9a;--cyan:#27e8ff;--gold:#ffc83d;--bg:#0f0a2b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0720;--panel:rgba(8,5,24,.85)}}
-:root[data-theme="dark"]{--bg:#0b0720;--panel:rgba(8,5,24,.85)}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-html,body{height:100%;margin:0;overflow:hidden}
-body{background:var(--bg);color:var(--ink);font:600 15px/1.35 system-ui,"Segoe UI",Roboto,sans-serif;user-select:none}
-[hidden]{display:none!important}
-#c{position:fixed;inset:0}
-.disp{font-family:"Lilita One",system-ui,sans-serif;font-weight:400}
-.ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(11,7,32,.84);z-index:5;padding:16px;overflow:auto}
-h1{font-size:clamp(46px,10vw,104px);line-height:.9;margin:0;color:#fff;text-shadow:0 0 22px var(--pink),4px 4px 0 var(--pink)}
-h2{font-size:clamp(30px,6vw,52px);margin:0 0 10px;text-shadow:0 0 16px var(--cyan)}
-.tag{color:var(--cyan);font-size:20px;margin:12px 0 18px}
-.btn{background:var(--pink);color:#fff;border:0;border-radius:16px;padding:14px 44px;font:400 28px "Lilita One",system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 0 #9d1a63;margin:8px}
-.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #9d1a63}.btn.alt{background:#3a2a8a;box-shadow:0 6px 0 #1f1560}
-.btn:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
-.bar{width:260px;height:10px;border-radius:6px;background:#2a1f6b;margin:6px auto 0;overflow:hidden}.bar i{display:block;height:100%;background:var(--cyan)}
-.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 18px;max-width:640px;margin-top:14px;font-size:14px;opacity:.9}
-.keys b{color:var(--gold)}
-.sm{max-width:520px;opacity:.85}
-table{border-collapse:collapse;margin:6px auto;min-width:min(480px,90vw)}td,th{padding:5px 12px;text-align:left}tr.me{background:rgba(255,61,154,.35)}th{color:var(--cyan)}
-.bot{font-size:10px;background:#5a4fb0;border-radius:4px;padding:1px 4px;font-style:normal}
-.pn{position:fixed;background:var(--panel);border-radius:12px;padding:8px 14px;z-index:3}
-#tl{top:calc(env(safe-area-inset-top,0px) + 10px);left:10px;font-size:18px}#tl b{font:400 34px "Lilita One",system-ui,sans-serif;color:var(--gold)}
-#tm{top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);font:400 36px "Lilita One",system-ui,sans-serif}
-#sb{top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;min-width:170px;font-size:14px}#sb div{display:flex;justify-content:space-between;gap:12px}#sb .me{color:var(--gold)}
-#car{bottom:calc(env(safe-area-inset-bottom,0px) + 40px);left:50%;transform:translateX(-50%);text-align:center;white-space:nowrap}
-#evb{top:70px;left:50%;transform:translateX(-50%);color:var(--gold);font-size:16px}
-#help{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:0;right:0;text-align:center;font-size:12px;opacity:.6;z-index:3}
-#ban{position:fixed;top:24%;left:0;right:0;text-align:center;font:400 clamp(36px,8vw,76px) "Lilita One",system-ui,sans-serif;opacity:0;transition:opacity .3s;pointer-events:none;text-shadow:0 4px 0 rgba(0,0,0,.5);z-index:4}
-#ban small{display:block;font:600 18px system-ui,sans-serif;color:#fff}
-#pop{position:fixed;inset:0;pointer-events:none;z-index:4}
-.pp{position:absolute;left:50%;top:48%;font:400 56px "Lilita One",system-ui,sans-serif;text-shadow:0 3px 0 rgba(0,0,0,.6);animation:fl 1s ease-out forwards}
-@keyframes fl{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,-90px);opacity:0}}
-@media (prefers-reduced-motion:reduce){.pp{animation-duration:.01s}}
-.modes,.nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0}
-.chip,.nav button{position:relative;background:#2a1f6b;color:#fff;border:2px solid #4a3aa8;border-radius:12px;padding:8px 16px;font:600 15px system-ui,sans-serif;cursor:pointer}
-.chip.on{background:var(--cyan);color:#0b0720;border-color:var(--cyan)}
-.chip:hover,.nav button:hover{border-color:var(--cyan)}
-.chip:focus-visible,.nav button:focus-visible,.cl:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
-.dot{position:absolute;top:-6px;right:-6px;width:14px;height:14px;border-radius:50%;background:var(--pink);border:2px solid #0b0720}
-.pc{background:var(--panel);border:2px solid #3a2a8a;border-radius:16px;padding:18px 22px;width:min(680px,94vw);max-height:84vh;overflow:auto;text-align:left}
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #2a1f6b}
-.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.day{background:#2a1f6b;border-radius:10px;padding:8px 2px;text-align:center;font-size:12px;border:2px solid transparent}.day.now{border-color:var(--gold)}.day.got{opacity:.45}
-.cl{background:var(--gold);color:#241a00;border:0;border-radius:10px;padding:8px 16px;font:700 14px system-ui,sans-serif;cursor:pointer;white-space:nowrap}.cl:disabled{background:#3a2a8a;color:#8a82c0;cursor:default}
-.mini{height:8px;background:#2a1f6b;border-radius:4px;overflow:hidden;margin:4px 0;width:min(220px,50vw)}.mini i{display:block;height:100%;background:var(--cyan)}
-#set{z-index:7}#pau{z-index:6}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
-.tb{background:#2a1f6b;color:#fff;border:2px solid #4a3aa8;border-radius:12px;padding:7px 14px;font:600 14px system-ui,sans-serif;cursor:pointer}.tb.on{background:var(--cyan);color:#0b0720;border-color:var(--cyan)}
-.tb:focus-visible,#set input:focus-visible,#set select:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
-.rg{display:flex;align-items:center;gap:10px}.rg input{width:min(200px,38vw);accent-color:var(--pink)}.rg output{min-width:52px;text-align:right}
-select{background:#2a1f6b;color:#fff;border:2px solid #4a3aa8;border-radius:8px;padding:6px 10px;font:600 14px system-ui,sans-serif}
-.sw{width:22px;height:22px;accent-color:var(--pink)}small{opacity:.7;font-weight:500}
-#fps{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);left:10px;font-size:13px;padding:3px 10px;z-index:8}
-#pbtn{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:10px;border:0;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer}
-.reduce .pp{animation-duration:.01s}.reduce #ban{transition:none}
-</style></head>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101722">
+  <meta name="description" content="Parcel Panic — Steal. Deliver. Survive. A colourful 3D delivery party game.">
+  <title>PARCEL PANIC — Steal. Deliver. Survive.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.128.0/three.min.js"></script>
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+</head>
 <body>
-<div id="c"></div>
-<div id="hud" hidden>
- <div id="tl" class="pn">Score<br><b id="sc">0</b><br><span id="rk"></span></div>
- <div id="tm" class="pn">2:00</div>
- <div id="sb" class="pn"></div>
- <div id="evb" class="pn" hidden></div>
- <div id="car" class="pn"></div><button id="pbtn" class="pn" aria-label="Pause">Pause</button>
- <div id="help">WASD move · Shift sprint · Space jump (twice for double jump) · E grab/steal · Q throw · F push · M mute</div>
-</div>
-<div id="ban"></div><div id="pop"></div>
-<div class="ov" id="menu">
- <h1 class="disp">PARCEL<br>PANIC</h1>
- <div class="tag disp">Steal. Deliver. Survive.</div>
- <div id="prof"></div>
- <div class="modes" id="modes"><button class="chip on" data-m="rush">Delivery Rush</button><button class="chip" data-m="gold">Golden Parcel</button></div>
- <button class="btn" id="play">PLAY</button>
- <div class="nav" id="nav"><button data-p="daily">Daily rewards<i class="dot" hidden></i></button><button data-p="play">Playtime<i class="dot" hidden></i></button><button data-p="quests">Quests<i class="dot" hidden></i></button><button data-p="stats">Stats</button><button data-p="settings">Settings</button></div>
- <p class="sm" id="modeDesc"></p>
- <div class="keys"><span><b>WASD</b> move</span><span><b>Shift</b> sprint</span><span><b>Space</b> jump, twice to double jump</span><span><b>E</b> grab or steal</span><span><b>Q</b> throw parcel</span><span><b>F</b> push rivals</span><span><b>Mouse</b> look (click to lock, or drag)</span><span><b>M</b> mute</span></div>
-</div>
-<div class="ov" id="res" hidden><h2 class="disp" id="rt"></h2><div id="rb"></div><div><button class="btn" id="again">PLAY AGAIN</button><button class="btn alt" id="home">MENU</button></div></div>
-<div class="ov" id="pnl" hidden></div>
-<div class="ov" id="set" hidden></div>
-<div class="ov" id="pau" hidden><h2 class="disp">Paused</h2><p class="sm">Your match is on hold.</p><button class="btn" id="pr">RESUME</button><button class="btn alt" id="ps">SETTINGS</button><button class="btn alt" id="pq">QUIT TO MENU</button></div>
-<div id="fps" class="pn" hidden></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-const $=id=>document.getElementById(id),HALF=35,BASE=14,MATCH=120;
-const TIERS=[{n:'Common',v:10,c:0xc8a165,w:60,s:1,sz:.7},{n:'Rare',v:25,c:0x3b9bff,w:25,s:.92,sz:.8},{n:'Epic',v:50,c:0xb04dff,w:11,s:.82,sz:.9},{n:'Golden',v:100,c:0xffc83d,w:4,s:.72,sz:1}];
-const EV=[{id:'dbl',n:'DOUBLE VALUE',c:'#ffc83d',d:'Every delivery is worth 2×'},{id:'rain',n:'PACKAGE RAIN',c:'#27e8ff',d:'Extra parcels everywhere'},{id:'speed',n:'SPEED BOOST',c:'#6dff7a',d:'Everyone is faster'},{id:'lowg',n:'LOW GRAVITY',c:'#c78bff',d:'Float, jump, steal!'}];
-const OBS=[[-10,-8,8,4,2.2],[12,6,5,5,2.8],[0,14,10,3,1.5],[-16,12,4,4,2.8],[18,-14,6,3,2],[-4,-20,3,8,2.5],[6,-2,4,4,1.2]];
-const ZONES=[{x:-24,z:-22,r:4.2},{x:24,z:22,r:4.2}];
-const SP=[...Array(8)].map((_,i)=>[Math.cos(i/8*6.2832)*27,Math.sin(i/8*6.2832)*27]);
-const hx=c=>'#'+c.toString(16).padStart(6,'0'),evid=()=>ev.cur?ev.cur.id:'';
-let save={xp:0,coins:0,matches:0,wins:0,del:0,best:0};
-try{Object.assign(save,JSON.parse(localStorage.getItem('pp1')||'{}'))}catch(e){}
-const persist=()=>{try{localStorage.setItem('pp1',JSON.stringify(save))}catch(e){}};
-const lvl=x=>Math.floor(Math.sqrt(x/50))+1;
-function prof(){if(window.badges)badges();const L=lvl(save.xp),a=50*(L-1)**2,b=50*L*L;$('prof').innerHTML=`Level <b>${L}</b> · ${save.coins} coins · ${save.wins} wins<div class="bar"><i style="width:${(save.xp-a)/(b-a)*100}%"></i></div>`}
-// audio
-let AC,mute=false;
-function sfx(f,d=.1,ty='square',v=.05,f2){v*=SET.master*SET.sfx;if(mute||paused||v<=.0001)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=ty;o.frequency.setValueAtTime(f,n);if(f2)o.frequency.exponentialRampToValueAtTime(f2,n+d);g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.0001,n+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(n+d)}catch(e){}}
-// scene
-const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.setSize(innerWidth,innerHeight);$('c').appendChild(R.domElement);
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x1a0f45);scene.fog=new THREE.Fog(0x1a0f45,60,150);
-const cam=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,300);
-scene.add(new THREE.HemisphereLight(0xb0b0ff,0x3a1c6a,1));const sun=new THREE.DirectionalLight(0xffffff,.7);sun.position.set(20,40,10);scene.add(sun);
-const fl=new THREE.Mesh(new THREE.BoxGeometry(70,1,70),new THREE.MeshLambertMaterial({color:0x2b1d6b}));fl.position.y=-.5;scene.add(fl);
-const grid=new THREE.GridHelper(70,35,0xff3d9a,0x4a3aa8);grid.position.y=.03;scene.add(grid);
-const mats=[0x3b2a8f,0x5b2a8f,0x2a5a8f];
-OBS.forEach((b,i)=>{const g=new THREE.BoxGeometry(b[2],b[4],b[3]),m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:mats[i%3]}));m.position.set(b[0],b[4]/2,b[1]);scene.add(m);const l=new THREE.LineSegments(new THREE.EdgesGeometry(g),new THREE.LineBasicMaterial({color:0x27e8ff}));l.position.copy(m.position);scene.add(l)});
-for(let i=0;i<28;i++){const a=i/28*6.283+Math.random()*.2,r=52+Math.random()*30,h=15+Math.random()*45,w=6+Math.random()*8;const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshLambertMaterial({color:0x1b1250,emissive:[0xff3d9a,0x27e8ff,0x7a4dff][i%3],emissiveIntensity:.18}));m.position.set(Math.cos(a)*r,h/2-6,Math.sin(a)*r);scene.add(m);(window.SKY=window.SKY||[]).push(m)}
-ZONES.forEach(z=>{const a=new THREE.Mesh(new THREE.CylinderGeometry(z.r,z.r,.2,32),new THREE.MeshBasicMaterial({color:0x27e8ff,transparent:true,opacity:.4}));a.position.set(z.x,.1,z.z);scene.add(a);const b=new THREE.Mesh(new THREE.CylinderGeometry(z.r,z.r,30,24,1,true),new THREE.MeshBasicMaterial({color:0x27e8ff,transparent:true,opacity:.12,side:THREE.DoubleSide,depthWrite:false}));b.position.set(z.x,15,z.z);scene.add(b)});
-const beam=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,40,8,1,true),new THREE.MeshBasicMaterial({color:0xffc83d,transparent:true,opacity:.3,depthWrite:false}));beam.visible=false;scene.add(beam);
-// characters
-function label(txt,col){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='rgba(10,6,30,.75)';x.fillRect(0,8,256,48);x.font='bold 30px system-ui,sans-serif';x.textAlign='center';x.fillStyle=col;x.fillText(txt,128,43);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false,transparent:true}));s.scale.set(3.2,.8,1);s.position.y=4.1;s.renderOrder=9;return s}
-function mk(name,color,bot){const g=new THREE.Group(),m=new THREE.MeshLambertMaterial({color}),L=c=>new THREE.MeshLambertMaterial({color:c});
- const body=new THREE.Mesh(new THREE.SphereGeometry(.55,16,12),m);body.position.y=.8;
- const head=new THREE.Mesh(new THREE.SphereGeometry(.38,16,12),L(0xffe0c2));head.position.y=1.7;
- const cap=new THREE.Mesh(new THREE.CylinderGeometry(.22,.4,.22,12),m);cap.position.y=2.02;
- const pk=new THREE.Mesh(new THREE.BoxGeometry(.6,.7,.3),L(0x222244));pk.position.set(0,.95,-.5);
- g.add(body,head,cap,pk);[-.14,.14].forEach(x=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.06,8,8),L(0x111111));e.position.set(x,1.75,.34);g.add(e)});
- g.add(label(bot?'BOT '+name:name,bot?'#a9a6d8':'#ffc83d'));g.userData.b=body;scene.add(g);
- return{name,bot,g,x:0,y:0,z:0,vx:0,vy:0,vz:0,ground:true,jumps:0,face:0,carry:null,score:0,del:0,stolen:0,gold:0,stun:0,prot:0,pcd:0,scd:0,fcd:0,think:0,chk:0,lx:0,lz:0,esc:0,ea:0,tgt:null,skill:.5+Math.random()*.4}}
-const NAMES=['Zippy','Boxer','Dash','Mailo','Tilly','Rocket','Pixel'],COLS=[0xff5a5a,0x5aa0ff,0x4be37a,0xffa63d,0xc07bff,0x35d6d6,0xff7bd0];
-const me=mk('You',0xff3d9a,false),ENT=[me,...NAMES.map((n,i)=>mk(n,COLS[i],true))];
-// packages
-const PK=[],pg=new THREE.BoxGeometry(1,1,1),tpg=new THREE.BoxGeometry(1.03,.2,1.03),tmat=new THREE.MeshBasicMaterial({color:0xffffff});
-for(let i=0;i<22;i++){const m=new THREE.Mesh(pg,new THREE.MeshLambertMaterial());m.add(new THREE.Mesh(tpg,tmat));m.visible=false;scene.add(m);PK.push({m,i,t:0,st:'gone',tm:0,x:0,y:0,z:0,vx:0,vy:0,vz:0,h:null})}
-function topAt(x,z){let t=(Math.abs(x)<HALF&&Math.abs(z)<HALF)?0:-99;for(const b of OBS)if(Math.abs(x-b[0])<b[2]/2&&Math.abs(z-b[1])<b[3]/2)t=Math.max(t,b[4]);return t}
-// ui helpers
-let bt;function banner(t,c='#fff',ms=1800,s=''){const b=$('ban');b.innerHTML=t+(s?`<small>${s}</small>`:'');b.style.color=c;b.style.opacity=1;clearTimeout(bt);bt=setTimeout(()=>b.style.opacity=0,ms)}
-function pop(t,c){const s=document.createElement('span');s.className='pp';s.textContent=t;s.style.color=c;$('pop').appendChild(s);setTimeout(()=>s.remove(),1000)}
-// state
-let S='menu',TL=MATCH,cd=0,lastN=0,ev={cur:null,left:0,next:25},yaw=0,pit=.5,drag=0,jq=0,t=0;const K={};
-// rules
-function spawn(p){let x,z,n=0;do{x=(Math.random()*2-1)*(HALF-4);z=(Math.random()*2-1)*(HALF-4);n++}while(n<30&&(OBS.some(b=>Math.abs(x-b[0])<b[2]/2+1.5&&Math.abs(z-b[1])<b[3]/2+1.5)||ZONES.some(q=>Math.hypot(x-q.x,z-q.z)<6)));
- let r=Math.random()*100,k=0;for(;k<3;k++){r-=TIERS[k].w;if(r<0)break}
- if(mode==='gold')k=3;else if(k===3&&PK.some(q=>q!==p&&q.st!=='gone'&&q.t===3))k=2;
- const T=TIERS[k];p.t=k;p.st='free';p.x=x;p.z=z;p.y=topAt(x,z);p.h=null;const mt=p.m.material;mt.color.setHex(T.c);mt.emissive.setHex(T.c);mt.emissiveIntensity=k>=2?.45:.15;p.m.scale.setScalar(T.sz);p.m.rotation.set(0,Math.random()*6,0);p.m.visible=true;
- if(k===3){banner('GOLDEN PARCEL!','#ffc83d',2000,'Follow the golden beam');sfx(700,.5,'triangle',.07,1400)}}
-function grab(e,p){p.st='held';p.h=e;e.carry=p;if(e===me)sfx(500,.08,'square',.05,800)}
-function drop(e,vx,vz,vy){const p=e.carry;if(!p)return;e.carry=null;p.h=null;p.st='fly';p.x=e.x;p.y=e.y+2;p.z=e.z;p.vx=vx;p.vy=vy;p.vz=vz;e.pcd=1}
-function interact(e){if(e.carry||e.stun>0)return false;let best=null,bd=2.4;
- for(const p of PK)if(p.st==='free'){const d=Math.hypot(p.x-e.x,p.z-e.z);if(d<bd&&Math.abs(p.y-e.y)<2.5){bd=d;best=p}}
- if(best&&e.pcd<=0){grab(e,best);return true}
- if(e.scd<=0){let v=null;bd=2.6;for(const o of ENT){if(o===e||!o.carry||o.prot>0)continue;const d=Math.hypot(o.x-e.x,o.z-e.z);if(d<bd){bd=d;v=o}}
-  if(v){const p=v.carry;v.carry=null;e.carry=p;p.h=e;v.stun=.7;v.prot=1.2;e.scd=1;e.stolen++;if(e===me)qp('steal');if(e===me||v===me){sfx(220,.25,'sawtooth',.06,90);pop(e===me?'Stolen!':'Robbed!',e===me?'#6dff7a':'#ff6b6b')}return true}}
- return false}
-function push(e){if(e.fcd>0||e.stun>0)return;e.fcd=1.4;if(e===me)sfx(150,.15,'square',.05,60);
- for(const o of ENT){if(o===e||o.prot>0)continue;const dx=o.x-e.x,dz=o.z-e.z,d=Math.hypot(dx,dz);if(d<3.2&&d>0){o.vx=dx/d*15;o.vz=dz/d*15;o.vy=Math.max(o.vy,4);o.ground=false;o.stun=.8;o.prot=1.5;if(o.carry)drop(o,dx/d*5,dz/d*5,6)}}}
-function throwIt(e){if(!e.carry)return;const a=e===me?[-Math.sin(yaw),-Math.cos(yaw)]:[Math.sin(e.face),Math.cos(e.face)];drop(e,a[0]*14,a[1]*14,7);if(e===me)sfx(300,.2,'triangle',.05,600)}
-function deliver(e){const p=e.carry,T=TIERS[p.t],pts=Math.round(T.v*(evid()==='dbl'?2:1)*(mode==='gold'?1.5:1));e.score+=pts;e.del++;if(p.t===3)e.gold++;e.carry=null;p.h=null;p.st='gone';p.tm=3+Math.random()*3;p.m.visible=false;if(e===me){qp('deliver');if(p.t>=1)qp('rare');if(p.t===3)qp('gold');pop('+'+pts,hx(T.c));sfx(660,.25,'triangle',.08,1320)}}
-function respawn(e,first){const s=SP[first!==undefined?first:Math.random()*8|0];e.x=s[0];e.z=s[1];e.y=0;e.vx=e.vz=e.vy=0;e.prot=first!==undefined?0:2.5;e.stun=0;e.ground=true;if(e.carry){const p=e.carry;e.carry=null;p.h=null;p.st='gone';p.tm=1;p.m.visible=false}}
-// physics
-function hit(e,ax){for(const b of OBS){const hw=b[2]/2+.5,hd=b[3]/2+.5;if(e.y<b[4]-.1&&Math.abs(e.x-b[0])<hw&&Math.abs(e.z-b[1])<hd){if(ax===0){e.x=b[0]+(e.vx>0?-hw:hw);e.vx=0}else{e.z=b[1]+(e.vz>0?-hd:hd);e.vz=0}}}}
-function step(e,dt,ix,iz,j,sp){const live=e.stun<=0,v=(sp?12:8.5)*(e.carry?TIERS[e.carry.t].s:1)*(evid()==='speed'?1.35:1),k=1-Math.exp(-(e.stun>0?2.5:e.ground?16:5)*dt);
- e.vx+=((live?ix*v:0)-e.vx)*k;e.vz+=((live?iz*v:0)-e.vz)*k;
- if(j&&live){if(e.ground){e.vy=10;e.jumps=1;e.ground=false;if(e===me)sfx(300,.1,'sine',.05,600)}else if(e.jumps<2){e.vy=9;e.jumps=2;if(e===me)sfx(400,.1,'sine',.05,800)}}
- e.vy-=(evid()==='lowg'?10:28)*dt;const py=e.y;
- e.x+=e.vx*dt;hit(e,0);e.z+=e.vz*dt;hit(e,1);e.y+=e.vy*dt;
- if(e.vy<=0){let s=null;if(Math.abs(e.x)<HALF&&Math.abs(e.z)<HALF&&py>=-.05)s=0;for(const b of OBS)if(Math.abs(e.x-b[0])<b[2]/2+.3&&Math.abs(e.z-b[1])<b[3]/2+.3&&py>=b[4]-.1&&(s===null||b[4]>s))s=b[4];
-  if(s!==null&&e.y<=s){e.y=s;e.vy=0;e.ground=true;e.jumps=0}else e.ground=false}else e.ground=false;
- if(e.y<-12)respawn(e)}
-// bots
-function ai(b,dt){let ix=0,iz=0,j=false,sp=false;b.think-=dt;
- if(b.think<=0){b.think=.25+Math.random()*.25;b.tgt=null;
-  if(b.carry){let bd=1e9;for(const z of ZONES){const d=Math.hypot(z.x-b.x,z.z-b.z);if(d<bd){bd=d;b.tgt=z}}}
-  else{let bs=-1;for(const p of PK)if(p.st==='free'){const d=Math.hypot(p.x-b.x,p.z-b.z),s=TIERS[p.t].v/(d+8);if(s>bs){bs=s;b.tgt=p}}
-   for(const o of ENT){if(o===b||!o.carry||o.prot>0)continue;const d=Math.hypot(o.x-b.x,o.z-b.z);if(d<10&&Math.random()<b.skill)b.tgt=o;if(d<2.8&&Math.random()<.35*b.skill){push(b);break}}}
-  interact(b)}
- const g=b.tgt;if(g){const dx=g.x-b.x,dz=g.z-b.z,d=Math.hypot(dx,dz)||1;ix=dx/d;iz=dz/d;sp=d>5}
- b.chk-=dt;if(b.chk<=0){b.chk=.6;if(g&&Math.hypot(b.x-b.lx,b.z-b.lz)<.8){b.esc=.7;b.ea=Math.random()*6.28}b.lx=b.x;b.lz=b.z}
- if(b.esc>0){b.esc-=dt;ix=Math.cos(b.ea);iz=Math.sin(b.ea);j=b.ground;sp=true}
- return[ix,iz,j,sp]}
-// visuals
-function vis(e,dt){const sp=Math.hypot(e.vx,e.vz),g=e.g;if(sp>.8){let d=Math.atan2(e.vx,e.vz)-e.face;d=Math.atan2(Math.sin(d),Math.cos(d));e.face+=d*Math.min(1,dt*14)}
- g.position.set(e.x,e.y+(e.ground?Math.abs(Math.sin(t*13))*.1*Math.min(1,sp/8):0),e.z);g.rotation.y=e.face;g.rotation.z=e.stun>0?Math.sin(t*30)*.3:0;
- g.userData.b.scale.set(1,1.15+Math.sin(t*13)*.05*Math.min(1,sp/8),1);g.visible=SET.reduce||e.prot<=0||((t*10)|0)%2===0}
-ENT.forEach((e,i)=>{respawn(e,i);e.face=Math.atan2(-e.x,-e.z)});
-// flow
-function events(dt){if(ev.cur){ev.left-=dt;if(ev.left<=0){ev.cur=null;ev.next=20+Math.random()*10}}else{ev.next-=dt;if(ev.next<=0&&TL>12){ev.cur=EV[Math.random()*EV.length|0];ev.left=14;banner(ev.cur.n,ev.cur.c,2400,ev.cur.d);sfx(300,.5,'sawtooth',.05,900)}}}
-function startMatch(){sfx(520,.1);$('menu').hidden=true;$('res').hidden=true;$('hud').hidden=false;ev={cur:null,left:0,next:22+Math.random()*8};TL=MATCH;
- ENT.forEach((e,i)=>{e.carry=null;e.score=e.del=e.stolen=e.gold=0;e.pcd=e.scd=e.fcd=0;e.think=Math.random()*.5;e.esc=0;e.chk=.6;e.tgt=null;respawn(e,i);e.lx=e.x;e.lz=e.z;e.face=Math.atan2(-e.x,-e.z)});
- PK.forEach((p,i)=>{p.st='gone';p.h=null;p.m.visible=false;p.tm=i<10?0:i<BASE?2+i*.4:0});
- yaw=Math.atan2(me.x,me.z);pit=.5;S='count';cd=3.99;lastN=0}
-const sortE=()=>[...ENT].sort((a,b)=>b.score-a.score||b.del-a.del);
-function endMatch(){S='end';if(document.exitPointerLock)document.exitPointerLock();const s=sortE(),rk=s.indexOf(me),win=rk===0;
- const bm=save.boost?2:1,xp=bm*Math.round(25+me.score*.6+(win?60:rk<3?20:0)),coins=Math.round(15+me.score*.25+(win?40:0)),L0=lvl(save.xp);
- save.xp+=xp;save.coins+=coins;save.boost=0;qp('play');if(win)qp('win');save.matches++;if(win)save.wins++;save.del+=me.del;save.best=Math.max(save.best,me.score);persist();const L1=lvl(save.xp);
- sfx(win?523:200,.6,'triangle',.08,win?1046:100);$('hud').hidden=true;
- $('rt').textContent=win?'You win!':s[0].name+' wins';
- $('rb').innerHTML='<table><tr><th>#</th><th>Courier</th><th>Score</th><th>Delivered</th><th>Stolen</th></tr>'+s.map((e,i)=>`<tr class="${e===me?'me':''}"><td>${i+1}</td><td>${e.name}${e.bot?' <i class="bot">BOT</i>':''}</td><td>${e.score}</td><td>${e.del}</td><td>${e.stolen}</td></tr>`).join('')+`</table><p>+${xp} XP${bm>1?' (boosted ×2)':''} · +${coins} coins${L1>L0?' · Level up! You are level '+L1:''}</p>`;
- setTimeout(()=>{$('res').hidden=false;prof()},900);banner('TIME!','#fff',900)}
-function hud(){const s=sortE(),r=s.indexOf(me)+1,m=Math.max(0,Math.ceil(TL));
- $('sc').textContent=me.score;$('rk').textContent='Rank '+r+' of '+ENT.length;$('tm').textContent=Math.floor(m/60)+':'+String(m%60).padStart(2,'0');
- $('sb').innerHTML=s.slice(0,6).map((e,i)=>`<div class="${e===me?'me':''}"><span>${i+1}. ${e.name}${e.bot?' <i class="bot">BOT</i>':''}</span><b>${e.score}</b></div>`).join('');
- const c=me.carry;let d=0;if(c)d=Math.round(Math.min(...ZONES.map(z=>Math.hypot(z.x-me.x,z.z-me.z)-z.r)));
- $('car').innerHTML=c?`Carrying <b style="color:${hx(TIERS[c.t].c)}">${TIERS[c.t].n}</b> · ${TIERS[c.t].v} pts<br>Run it to a glowing ring (${Math.max(0,d)} m)`:'Find a parcel · E to grab or steal';
- $('evb').hidden=!ev.cur;if(ev.cur){$('evb').textContent=ev.cur.n+' · '+Math.ceil(ev.left)+'s'}}
-// input
-addEventListener('keydown',e=>{if(rebind){doBind(e);return}if(e.code==='Escape'){if(!$('set').hidden)closeSet();else if(!paused)pause();else if(performance.now()-pt>300)resume();return}if(e.code==='KeyP'&&!paused&&!e.repeat){pause();return}K[e.code]=1;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&!/INPUT|SELECT/.test(document.activeElement.tagName))e.preventDefault();if(e.repeat)return;
- if(e.code===B.jump&&S==='play')jq=1;if(e.code==='KeyM'){mute=!mute;SET.mute=mute;saveSet()}if(S==='play'&&!paused){if(e.code===B.interact)interact(me);if(e.code===B.throw)throwIt(me);if(e.code===B.push)push(me)}});
-addEventListener('keyup',e=>K[e.code]=0);addEventListener('blur',()=>{for(const k in K)K[k]=0});
-R.domElement.addEventListener('mousedown',()=>{drag=1;try{const p=R.domElement.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}});
-addEventListener('mouseup',()=>drag=0);
-addEventListener('mousemove',e=>{if(S==='menu'||S==='end')return;if(drag||document.pointerLockElement){yaw-=e.movementX*.004*SET.sens;pit=Math.max(.08,Math.min(1.3,pit+e.movementY*.003*SET.sens*(SET.invert?-1:1)))}});
-addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()});
-$('play').onclick=startMatch;$('again').onclick=startMatch;$('home').onclick=()=>{S='menu';$('res').hidden=true;$('menu').hidden=false;prof()};
-// meta: modes, daily, playtime, quests (device clock, saved in this browser)
-const dayNo=()=>{const d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*6e4)/864e5)};
-const DAILY=[{n:'100 coins',c:100},{n:'XP boost (2× next match)',b:1},{n:'150 coins',c:150},{n:'Mystery crate',cr:1},{n:'250 coins',c:250},{n:'Title: Night Courier',ti:'Night Courier'},{n:'Rare crate',cr:2}];
-const PTM=[{m:5,n:'50 coins',c:50},{m:15,n:'100 coins',c:100},{m:30,n:'200 coins',c:200},{m:45,n:'XP boost',b:1},{m:60,n:'Mystery crate',cr:1}];
-const QP=[{id:'deliver',t:'Deliver 15 parcels',n:15,c:120,x:40},{id:'steal',t:'Steal 3 parcels',n:3,c:100,x:40},{id:'win',t:'Win a match',n:1,c:150,x:60},{id:'play',t:'Play 3 matches',n:3,c:100,x:30},{id:'rare',t:'Deliver 5 rare or better parcels',n:5,c:130,x:50},{id:'gold',t:'Deliver 2 golden parcels',n:2,c:200,x:70}];
-const WK={id:'deliver',t:'Weekly: deliver 100 parcels',n:100,c:500,x:150};
-const MODES={rush:'Delivery Rush: grab parcels, carry them into a glowing ring and steal from rivals. 2 minutes, eight couriers (you and seven labelled bots).',gold:'Golden Parcel: a single golden parcel (150 points) spawns at a time. Grab it, survive the chase, deliver it. Everyone can see the beam.'};
-let mode='rush',cur='daily',msg='',idle=0,ps=0;
-save.dr=save.dr||{last:-9,idx:0,streak:0,best:0};save.titles=save.titles||[];save.pt=save.pt||{day:-1,sec:0,got:[]};save.q=save.q||{day:-1,l:[]};save.wk=save.wk||{wk:-1,p:0,got:0};save.boost=save.boost||0;save.sec=save.sec||0;
-function roll(){const d=dayNo();if(save.q.day!==d)save.q={day:d,l:[0,1,2].map(i=>({i:(d+i*2)%6,p:0,got:0}))};const w=Math.floor((d+3)/7);if(save.wk.wk!==w)save.wk={wk:w,p:0,got:0};if(save.pt.day!==d)save.pt={day:d,sec:0,got:[]}}
-function qp(id,n=1){roll();save.q.l.forEach(q=>{if(QP[q.i].id===id)q.p=Math.min(QP[q.i].n,q.p+n)});if(id===WK.id)save.wk.p=Math.min(WK.n,save.wk.p+n);persist()}
-function dState(){const d=dayNo(),r=save.dr;if(r.last===d)return'done';if(d-r.last>2){r.idx=0;r.streak=0}return'ready'}
-function grant(r){const s=[];if(r.c){save.coins+=r.c;s.push('+'+r.c+' coins')}if(r.x){save.xp+=r.x;s.push('+'+r.x+' XP')}if(r.b){save.boost=1;s.push('XP boost ready')}
- if(r.cr){const c=Math.round((80+Math.random()*220)*r.cr);save.coins+=c;s.push('Crate: '+c+' coins');if(Math.random()<.35*r.cr){const pool=['Parcel Pro','Rooftop Runner','Neon Courier','Box Bandit'].filter(x=>!save.titles.includes(x));if(pool.length){const ti=pool[Math.random()*pool.length|0];save.titles.push(ti);s.push('Title: '+ti)}}}
- if(r.ti&&!save.titles.includes(r.ti)){save.titles.push(r.ti);s.push('Title: '+r.ti)}persist();sfx(660,.3,'triangle',.08,1320);return s.join(', ')}
-function ptick(dt){if(performance.now()-idle>20000)return;roll();save.pt.sec+=dt;save.sec+=dt;ps+=dt;if(ps>10){ps=0;persist()}}
-['keydown','mousedown','mousemove'].forEach(k=>addEventListener(k,()=>idle=performance.now()));
-function badges(){roll();const q=save.q.l.some(d=>!d.got&&d.p>=QP[d.i].n)||(!save.wk.got&&save.wk.p>=WK.n),p=PTM.some((x,i)=>save.pt.sec>=x.m*60&&!save.pt.got.includes(i)),D=document.querySelectorAll('.dot');D[0].hidden=dState()!=='ready';D[1].hidden=!p;D[2].hidden=!q}
-function panel(p){roll();cur=p||cur;let h='';
- if(cur==='daily'){const st=dState(),r=save.dr;h=`<h2 class="disp">Daily rewards</h2><p>Streak: <b>${r.streak}</b> days · Best: <b>${r.best}</b></p><div class="days">${DAILY.map((d,i)=>`<div class="day ${i<r.idx?'got':''} ${i===r.idx&&st==='ready'?'now':''}"><b>Day ${i+1}</b><br>${d.n}</div>`).join('')}</div><p><button class="cl" data-a="d" ${st==='done'?'disabled':''}>${st==='done'?'Come back tomorrow':'Claim Day '+(r.idx+1)}</button></p><p class="sm">Miss one day and your streak survives. This uses your device clock, so it isn’t tamper-proof.</p>`}
- else if(cur==='play'){h=`<h2 class="disp">Playtime rewards</h2><p>Active play today: <b>${Math.floor(save.pt.sec/60)} min</b>. Idle time doesn’t count.</p>`+PTM.map((x,i)=>{const ok=save.pt.sec>=x.m*60,got=save.pt.got.includes(i);return`<div class="row"><div><b>${x.m} minutes</b> · ${x.n}<div class="mini"><i style="width:${Math.min(100,save.pt.sec/x.m/.6)}%"></i></div></div><button class="cl" data-a="p${i}" ${!ok||got?'disabled':''}>${got?'Claimed':ok?'Claim':'Locked'}</button></div>`}).join('')}
- else if(cur==='quests'){const row=(q,d,k)=>`<div class="row"><div><b>${q.t}</b><br>${q.c} coins · ${q.x} XP<div class="mini"><i style="width:${d.p/q.n*100}%"></i></div>${d.p} / ${q.n}</div><button class="cl" data-a="${k}" ${d.got||d.p<q.n?'disabled':''}>${d.got?'Claimed':d.p<q.n?'In progress':'Claim'}</button></div>`;h=`<h2 class="disp">Quests</h2><p>Daily quests reset at midnight.</p>`+save.q.l.map((d,i)=>row(QP[d.i],d,'q'+i)).join('')+row(WK,save.wk,'w')}
- else h=`<h2 class="disp">Stats</h2>`+[['Level',lvl(save.xp)],['Matches',save.matches],['Wins',save.wins],['Parcels delivered',save.del],['Best match score',save.best],['Play time',Math.floor(save.sec/60)+' min'],['Titles',save.titles.join(', ')||'None yet']].map(a=>`<div class="row"><span>${a[0]}</span><b>${a[1]}</b></div>`).join('');
- $('pnl').innerHTML=`<div class="pc">${msg?`<p style="color:var(--gold)"><b>${msg}</b></p>`:''}${h}<p style="text-align:center"><button class="btn alt" data-a="x">Close</button></p></div>`;msg='';$('pnl').hidden=false}
-$('pnl').onclick=e=>{const a=e.target.dataset.a;if(!a)return;if(a==='x'){$('pnl').hidden=true;prof();return}roll();
- if(a==='d'&&dState()==='ready'){const r=save.dr;msg='Day '+(r.idx+1)+': '+grant(DAILY[r.idx]);r.idx=(r.idx+1)%7;r.streak++;r.best=Math.max(r.best,r.streak);r.last=dayNo()}
- else if(a[0]==='p'){const i=+a.slice(1),x=PTM[i];if(save.pt.sec>=x.m*60&&!save.pt.got.includes(i)){save.pt.got.push(i);msg=grant(x)}}
- else if(a[0]==='q'){const d=save.q.l[+a.slice(1)],q=QP[d.i];if(!d.got&&d.p>=q.n){d.got=1;msg=grant(q)}}
- else if(a==='w'&&!save.wk.got&&save.wk.p>=WK.n){save.wk.got=1;msg=grant(WK)}
- persist();panel()};
-$('modes').onclick=e=>{const m=e.target.dataset.m;if(!m)return;mode=m;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.m===m));$('modeDesc').textContent=MODES[m];sfx(400,.05)};
-$('nav').onclick=e=>{const b=e.target.closest('button');if(b&&b.dataset.p==='settings'){sfx(450,.06);openSet()}else if(b&&b.dataset.p){sfx(450,.06);panel(b.dataset.p)}};
-$('modeDesc').textContent=MODES.rush;
-// settings
-const DEF={master:.8,music:.5,sfx:.8,mute:false,gfx:'high',res:100,fps:0,sens:1,invert:false,fov:65,dist:9,hud:1,hint:true,fpsc:false,names:true,reduce:false,pause:true,keys:{fw:'KeyW',back:'KeyS',left:'KeyA',right:'KeyD',jump:'Space',sprint:'ShiftLeft',interact:'KeyE',throw:'KeyQ',push:'KeyF'}};
-const SET=Object.assign({},DEF,save.set||{});SET.keys=Object.assign({},DEF.keys,SET.keys);const B=SET.keys,FMT={};
-const GFX={low:{dpr:.75,sky:0,far:90},medium:{dpr:1,sky:1,far:150},high:{dpr:2,sky:1,far:300}};
-const ACTS=[['fw','Move forward'],['back','Move back'],['left','Move left'],['right','Move right'],['jump','Jump'],['sprint','Sprint'],['interact','Grab / steal'],['throw','Throw parcel'],['push','Push rivals']];
-const TABS=[['audio','Audio'],['video','Video'],['controls','Controls'],['access','Gameplay'],['data','Data']];
-let paused=false,pt=0,stab='audio',rebind=null,wipe=0,fsn=0,fc=0,ft=0,mi=0,ms=0;
-const saveSet=()=>{save.set=SET;persist()},pc=v=>Math.round(v*100)+'%';
-const KN=c=>({Space:'Space',ShiftLeft:'Shift',ShiftRight:'R-Shift',ArrowUp:'↑',ArrowDown:'↓',ArrowLeft:'←',ArrowRight:'→',ControlLeft:'Ctrl',AltLeft:'Alt',Tab:'Tab'}[c]||c.replace(/^(Key|Digit)/,''));
-function updateHelp(){$('help').textContent=`${KN(B.fw)}${KN(B.left)}${KN(B.back)}${KN(B.right)} move · ${KN(B.sprint)} sprint · ${KN(B.jump)} jump (twice for double jump) · ${KN(B.interact)} grab/steal · ${KN(B.throw)} throw · ${KN(B.push)} push · Esc pause · M mute`;
- document.querySelector('.keys').innerHTML=[[KN(B.fw)+KN(B.left)+KN(B.back)+KN(B.right),'move'],[KN(B.sprint),'sprint'],[KN(B.jump),'jump, twice to double jump'],[KN(B.interact),'grab or steal'],[KN(B.throw),'throw parcel'],[KN(B.push),'push rivals'],['Mouse','look (click to lock, or drag)'],['Esc','pause and settings']].map(a=>`<span><b>${a[0]}</b> ${a[1]}</span>`).join('')}
-function applySet(){const g=GFX[SET.gfx];R.setPixelRatio(Math.max(.4,Math.min(devicePixelRatio||1,g.dpr)*SET.res/100));R.setSize(innerWidth,innerHeight);(window.SKY||[]).forEach(m=>m.visible=!!g.sky);cam.far=g.far;scene.fog.far=Math.min(150,g.far);cam.fov=SET.fov;cam.updateProjectionMatrix();
- mute=SET.mute;document.body.classList.toggle('reduce',SET.reduce);$('hud').style.zoom=SET.hud;$('help').hidden=!SET.hint;$('fps').hidden=!SET.fpsc;ENT.forEach(e=>{e.g.children[e.g.children.length-1].visible=SET.names});updateHelp()}
-function fpsTick(now){fc++;if(now-ft>=1000){if(SET.fpsc)$('fps').textContent=Math.round(fc*1000/(now-ft))+' FPS';fc=0;ft=now}}
-const sl=(k,l,min,max,st,f)=>{FMT[k]=f;return`<div class="row"><label for="s_${k}">${l}</label><span class="rg"><input type="range" id="s_${k}" data-k="${k}" min="${min}" max="${max}" step="${st}" value="${SET[k]}"><output>${f(SET[k])}</output></span></div>`};
-const tg=(k,l,d)=>`<div class="row"><label for="s_${k}">${l}${d?`<br><small>${d}</small>`:''}</label><input type="checkbox" class="sw" id="s_${k}" data-k="${k}" ${SET[k]?'checked':''}></div>`;
-const sel=(k,l,o)=>`<div class="row"><label for="s_${k}">${l}</label><select id="s_${k}" data-k="${k}">${o.map(a=>`<option value="${a[0]}" ${String(SET[k])===String(a[0])?'selected':''}>${a[1]}</option>`).join('')}</select></div>`;
-function drawSet(){let h='';
- if(stab==='audio')h=sl('master','Master volume',0,1,.05,pc)+sl('music','Music volume',0,1,.05,pc)+sl('sfx','Sound effects volume',0,1,.05,pc)+tg('mute','Mute all sound','Also toggled with M');
- else if(stab==='video')h=sel('gfx','Graphics quality',[['low','Low (fastest)'],['medium','Medium'],['high','High']])+sl('res','Resolution scale',50,100,5,v=>v+'%')+sel('fps','FPS limit',[[0,'Unlimited'],[30,'30'],[60,'60'],[120,'120']])+sl('fov','Field of view',55,90,1,v=>v+'°')+`<div class="row"><label>Fullscreen${fsn?'<br><small>Fullscreen isn’t available in this window.</small>':''}</label><button class="cl" data-a="fs">${document.fullscreenElement?'Exit fullscreen':'Enter fullscreen'}</button></div>`+tg('fpsc','Show FPS counter');
- else if(stab==='controls')h=sl('sens','Mouse sensitivity',.3,2.5,.05,v=>(+v).toFixed(2)+'×')+sl('dist','Camera distance',6,14,.5,v=>v+' m')+tg('invert','Invert camera Y')+ACTS.map(a=>`<div class="row"><span>${a[1]}</span><button class="cl" data-a="k_${a[0]}">${rebind===a[0]?'Press a key…':KN(B[a[0]])}</button></div>`).join('')+'<p class="sm">Click a key, then press the new one. Esc cancels. M always mutes.</p>';
- else if(stab==='access')h=tg('reduce','Reduced visual effects','Stops flashing, and shortens animated popups')+sl('hud','HUD size',.8,1.4,.05,pc)+tg('hint','Show control hints')+tg('names','Show name tags')+tg('pause','Auto-pause when the tab loses focus');
- else h=`<div class="row"><span>Reset settings to defaults</span><button class="cl" data-a="rs">Reset</button></div><div class="row"><span>Erase all progress (XP, coins, rewards, quests)</span><button class="cl" data-a="rp">${wipe?'Click again to erase':'Erase'}</button></div>`;
- $('set').innerHTML=`<div class="pc"><h2 class="disp">Settings</h2><div class="tabs">${TABS.map(x=>`<button data-t="${x[0]}" class="tb ${x[0]===stab?'on':''}">${x[1]}</button>`).join('')}</div>${h}<p style="text-align:center"><button class="btn alt" data-a="back">Back</button></p></div>`}
-function openSet(){stab='audio';wipe=0;rebind=null;drawSet();$('set').hidden=false}
-function closeSet(){$('set').hidden=true;rebind=null;saveSet()}
-function doBind(e){e.preventDefault();const a=rebind;rebind=null;if(e.code!=='Escape'&&e.code!=='KeyM'){const o=Object.keys(B).find(k=>B[k]===e.code&&k!==a);if(o)B[o]=B[a];B[a]=e.code;saveSet();updateHelp()}drawSet()}
-function toggleFs(){const d=document;try{const p=d.fullscreenElement?d.exitFullscreen():d.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>{fsn=1;drawSet()})}catch(e){fsn=1;drawSet()}}
-$('set').addEventListener('input',e=>{const k=e.target.dataset.k;if(!k||e.target.type!=='range')return;SET[k]=+e.target.value;e.target.nextElementSibling.textContent=FMT[k](SET[k]);applySet();saveSet()});
-$('set').addEventListener('change',e=>{const k=e.target.dataset.k;if(!k||e.target.type==='range')return;SET[k]=e.target.type==='checkbox'?e.target.checked:(k==='gfx'?e.target.value:+e.target.value);applySet();saveSet();sfx(500,.05)});
-$('set').onclick=e=>{const d=e.target.dataset;if(d.t){stab=d.t;wipe=0;rebind=null;drawSet();return}const a=d.a;if(!a)return;
- if(a==='back'){closeSet();return}
- if(a==='fs')toggleFs();
- else if(a==='rs'){for(const k in DEF)if(k!=='keys')SET[k]=DEF[k];Object.assign(B,DEF.keys);applySet();saveSet();drawSet()}
- else if(a==='rp'){if(wipe){save={set:SET};persist();location.reload()}else{wipe=1;drawSet()}}
- else if(a.slice(0,2)==='k_'){rebind=a.slice(2);drawSet()}};
-document.addEventListener('fullscreenchange',()=>{fsn=0;if(!$('set').hidden)drawSet()});
-// pause (also what an ad or SDK hook should call)
-function pause(){if(paused||!(S==='play'||S==='count'))return;paused=true;pt=performance.now();$('pau').hidden=false;if(document.exitPointerLock)document.exitPointerLock();for(const k in K)K[k]=0;if(AC&&AC.suspend)AC.suspend()}
-function resume(){if(!paused)return;paused=false;$('pau').hidden=true;last=performance.now();if(AC&&AC.resume)AC.resume();try{const p=R.domElement.requestPointerLock();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
-$('pr').onclick=resume;$('ps').onclick=openSet;$('pbtn').onclick=pause;
-$('pq').onclick=()=>{paused=false;$('pau').hidden=true;S='menu';$('hud').hidden=true;$('menu').hidden=false;prof();if(AC&&AC.resume)AC.resume()};
-document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&(S==='play'||S==='count')&&!paused)pause()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&SET.pause)pause()});
-addEventListener('blur',()=>{if(SET.pause)pause()});
-// music: small procedural loop on the music volume
-function music(){if(mi)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}
- mi=setInterval(()=>{const vol=SET.master*SET.music;if(mute||paused||vol<=0||document.hidden||!AC)return;try{const n=AC.currentTime,pl=S==='play'||S==='count',st=[0,3,7,10,12,10,7,3][ms%8]+(((ms>>3)%4)>1?5:0),o=AC.createOscillator(),g=AC.createGain();o.type=pl?'square':'triangle';o.frequency.value=440*2**(((pl?55:50)+st-69)/12);g.gain.setValueAtTime(.06*vol,n);g.gain.exponentialRampToValueAtTime(.0001,n+.22);o.connect(g);g.connect(AC.destination);o.start();o.stop(n+.24);ms++}catch(e){}},200)}
-addEventListener('pointerdown',music,{once:true});
-applySet();
-// loop
-let last=performance.now(),hT=0;const tmp=new THREE.Vector3();prof();
-function loop(now){requestAnimationFrame(loop);if(paused){last=now;return}if(SET.fps&&now-last<1000/SET.fps-2)return;fpsTick(now);const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
- if(S==='menu'){cam.position.set(Math.cos(t*.15)*42,18,Math.sin(t*.15)*42);cam.lookAt(0,2,0);ENT.forEach(e=>vis(e,dt))}
- else{
-  if(S==='count'){cd-=dt;const n=Math.ceil(cd);if(n!==lastN&&n>0){lastN=n;banner(n,'#fff',900);sfx(440,.12)}if(cd<=0){S='play';banner('GO!','#6dff7a',900);sfx(880,.3,'square',.06,1320)}}
-  if(S==='play'){TL-=dt;ptick(dt);events(dt);if(TL<=0)endMatch()}
-  const live=S==='play';yaw+=((K.ArrowLeft?1:0)-(K.ArrowRight?1:0))*2*dt;
-  for(const e of ENT){let a=[0,0,false,false];e.pcd-=dt;e.scd-=dt;e.fcd-=dt;e.stun-=dt;e.prot-=dt;
-   if(live){if(e===me){const fw=(K[B.fw]||K.ArrowUp?1:0)-(K[B.back]||K.ArrowDown?1:0),rt=(K[B.right]?1:0)-(K[B.left]?1:0);let ix=-Math.sin(yaw)*fw+Math.cos(yaw)*rt,iz=-Math.cos(yaw)*fw-Math.sin(yaw)*rt;const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}a=[ix,iz,!!jq,!!(K[B.sprint]||(B.sprint==='ShiftLeft'&&K.ShiftRight))];jq=0}else a=ai(e,dt)}
-   step(e,dt,a[0],a[1],a[2],a[3]);
-   if(live&&e.carry)for(const z of ZONES)if(Math.hypot(e.x-z.x,e.z-z.z)<z.r&&e.y<2.5){deliver(e);break}
-   vis(e,dt)}
-  for(const p of PK){if(p.st==='gone'){p.tm-=dt;if(p.tm<=0&&(S==='play'||S==='count')&&(mode==='gold'?p.i===0:(p.i<BASE||evid()==='rain')))spawn(p);continue}
-   const T=TIERS[p.t],m=p.m;
-   if(p.st==='held'){m.position.set(p.h.x,p.h.y+2.3+T.sz/2,p.h.z);m.rotation.y+=dt*2;m.rotation.x=0}
-   else if(p.st==='fly'){p.vy-=24*dt;p.x+=p.vx*dt;p.z+=p.vz*dt;p.y+=p.vy*dt;const top=topAt(p.x,p.z);if(p.vy<=0&&p.y<=top){p.y=top;p.st='free'}else if(p.y<-12){p.st='gone';p.tm=2;m.visible=false;continue}m.position.set(p.x,p.y+T.sz/2,p.z);m.rotation.x+=dt*6}
-   else{m.rotation.y+=dt*1.5;m.rotation.x=0;m.position.set(p.x,p.y+T.sz/2+Math.sin(t*3+p.i)*.08,p.z)}}
-  const gp=PK.find(p=>p.st!=='gone'&&p.t===3);beam.visible=!!gp;if(gp){const q=gp.h||gp;beam.position.set(q.x,20,q.z)}
-  const D=SET.dist,cp=Math.cos(pit);tmp.set(me.x+Math.sin(yaw)*cp*D,me.y+1.6+Math.sin(pit)*D,me.z+Math.cos(yaw)*cp*D);cam.position.lerp(tmp,1-Math.exp(-14*dt));cam.lookAt(me.x,me.y+1.6,me.z);
-  hT-=dt;if(hT<=0&&S!=='end'){hT=.2;hud()}}
- R.render(scene,cam)}
-requestAnimationFrame(loop);
-</script></body></html>
+  <main id="app">
+    <canvas id="game-canvas" aria-label="Parcel Panic 3D game"></canvas>
+    <div class="scene-vignette"></div>
+
+    <header class="topbar" id="topbar">
+      <a class="brand" href="#" aria-label="Parcel Panic home">
+        <span class="brand-box"><i></i><i></i><i></i></span>
+        <span class="brand-word">PARCEL<span>PANIC</span><small>STEAL. DELIVER. SURVIVE.</small></span>
+      </a>
+      <div class="topbar-right">
+        <div class="profile-chip">
+          <span class="avatar" id="profile-avatar">P</span>
+          <span><b id="profile-name">COURIER</b><small id="profile-level">LEVEL 1</small></span>
+        </div>
+        <div class="currency-chip"><span class="coin-icon">¢</span><b id="coin-count">0</b></div>
+        <button class="square-button" id="sound-button" aria-label="Toggle sound" title="Sound">♫</button>
+        <button class="square-button" id="settings-button" aria-label="Settings" title="Settings">⚙</button>
+      </div>
+    </header>
+
+    <section class="menu-screen" id="menu-screen">
+      <div class="menu-content">
+        <div class="menu-copy">
+          <div class="eyebrow"><span></span> THE CITY'S FASTEST DELIVERY CREW</div>
+          <h1>STEAL.<br>DELIVER.<br><em>SURVIVE.</em></h1>
+          <p>Grab the goods, dodge the chaos and make the drop. Everyone wants the big score. Don't let them take yours.</p>
+          <div class="mode-picker">
+            <div class="picker-heading"><span>CHOOSE YOUR SHIFT</span><small>4 WAYS TO CAUSE CHAOS</small></div>
+            <div class="mode-grid" id="mode-grid">
+              <button class="mode-card selected" data-mode="rush">
+                <span class="mode-index">01</span><span class="mode-icon rush-icon">↗</span>
+                <b>DELIVERY RUSH</b><small>Everybody for themselves</small>
+              </button>
+              <button class="mode-card" data-mode="team">
+                <span class="mode-index">02</span><span class="mode-icon team-icon">◈</span>
+                <b>TEAM DELIVERY</b><small>Two crews. One winning depot.</small>
+              </button>
+              <button class="mode-card" data-mode="survival">
+                <span class="mode-index">03</span><span class="mode-icon survival-icon">⌁</span>
+                <b>LAST RUNNER</b><small>Stay inside. Be the last up.</small>
+              </button>
+              <button class="mode-card" data-mode="gold">
+                <span class="mode-index">04</span><span class="mode-icon gold-icon">✦</span>
+                <b>GOLDEN PACKAGE</b><small>One parcel. Everybody wants it.</small>
+              </button>
+            </div>
+          </div>
+          <div class="map-row">
+            <label for="map-select">TODAY'S DEPOT</label>
+            <select id="map-select">
+              <option value="neon">Neon City</option>
+              <option value="tropical">Tropical Trouble</option>
+              <option value="factory">The Factory</option>
+              <option value="skyfall">Skyfall</option>
+            </select>
+            <span class="map-tag" id="map-tag">ROOFTOP RUN</span>
+          </div>
+          <div class="main-actions">
+            <button class="primary-button" id="play-button"><span class="play-triangle">▶</span><span><b>START A RUN</b><small>QUICK MATCH · 2–3 MINUTES</small></span><strong>↗</strong></button>
+            <button class="outline-button" id="how-button">HOW TO PLAY <span>＋</span></button>
+          </div>
+          <div class="menu-meta"><span class="live-dot"></span> PRACTICE RUN · BOTS CLEARLY LABELLED <span class="build">BUILD 0.2.0</span></div>
+        </div>
+
+        <aside class="menu-side">
+          <div class="courier-stage">
+            <div class="stage-burst burst-one"></div><div class="stage-burst burst-two"></div>
+            <div class="stage-label">YOUR COURIER</div>
+            <div class="stage-name">THE<br>RUNNER<span>™</span></div>
+            <div class="stage-sub">READY FOR THE SHIFT</div>
+            <div class="stage-bottom"><span>01 / 04</span><i></i><span>NEON DEPOT</span></div>
+          </div>
+          <div class="quick-card">
+            <div class="quick-top"><span>THE QUICK ROUTE</span><b>HOW IT WORKS</b></div>
+            <div class="quick-step"><span class="quick-number">01</span><div><b>FIND THE GOODS</b><small>Pick up a parcel. Rare drops are worth more.</small></div></div>
+            <div class="quick-step"><span class="quick-number">02</span><div><b>MAKE YOUR RUN</b><small>Jump, sprint, shove and watch your back.</small></div></div>
+            <div class="quick-step"><span class="quick-number">03</span><div><b>MAKE THE DROP</b><small>Get to a glowing depot before the others.</small></div></div>
+          </div>
+        </aside>
+      </div>
+      <footer class="menu-footer">
+        <div><span>CONTROLS</span><kbd>WASD</kbd> MOVE <kbd>SPACE</kbd> JUMP <kbd>SHIFT</kbd> SPRINT <kbd>E</kbd> GRAB <kbd>Q</kbd> THROW <kbd>F</kbd> PUSH</div>
+        <div class="footer-right">A LITTLE COMPETITION NEVER HURT <b>© PARCEL PANIC</b></div>
+      </footer>
+    </section>
+
+    <section class="game-hud hidden" id="game-hud">
+      <div class="hud-top">
+        <div class="score-panel">
+          <small id="score-label">YOUR SCORE</small>
+          <strong id="hud-score">000</strong>
+          <span id="hud-rank">1ST PLACE</span>
+        </div>
+        <div class="timer-panel"><small id="timer-label">SHIFT ENDS IN</small><strong id="hud-timer">02:00</strong><div class="timer-bar"><i id="timer-progress"></i></div></div>
+        <div class="leader-panel"><div class="leader-title"><span id="leader-title">DEPOT RANKINGS</span><span>PTS</span></div><div id="leader-list"></div></div>
+      </div>
+      <div class="objective-panel" id="objective-panel"><span class="objective-dot"></span><div><small id="objective-kicker">YOUR LOAD</small><b id="objective-text">EMPTY HANDS · FIND A PARCEL</b></div><strong id="objective-extra">E</strong></div>
+      <div class="event-banner hidden" id="event-banner"><b id="event-title">PACKAGE RAIN</b><small id="event-copy">Extra parcels have dropped.</small></div>
+      <div class="center-toast hidden" id="center-toast"><b id="toast-title">DELIVERY COMPLETE</b><small id="toast-copy">+25 POINTS</small></div>
+      <div class="hud-bottom-left"><span class="zone-arrow">◎</span><div><small id="zone-label">DELIVERY ZONE</small><b id="zone-distance">FIND THE NEON RING</b></div></div>
+      <div class="hud-bottom-right"><span><kbd>Q</kbd> THROW</span><span><kbd>F</kbd> PUSH</span><span><kbd>ESC</kbd> PAUSE</span></div>
+      <button class="pause-button" id="pause-button">Ⅱ</button>
+      <div class="touch-ui" id="touch-ui">
+        <div class="joystick" id="joystick"><i id="joystick-knob"></i><small>MOVE</small></div>
+        <div class="touch-actions"><button id="touch-jump">JUMP</button><button id="touch-sprint">RUN</button><button id="touch-interact">GRAB</button><button id="touch-throw">THROW</button><button id="touch-push">PUSH</button></div>
+      </div>
+    </section>
+
+    <section class="overlay hidden" id="pause-overlay">
+      <div class="dialog pause-dialog"><div class="eyebrow"><span></span> TAKE FIVE</div><h2>SHIFT<br><em>PAUSED.</em></h2><p>Catch your breath. Your parcels aren't going anywhere.</p><button class="primary-button full" id="resume-button"><span class="play-triangle">▶</span><span><b>BACK TO IT</b><small>RESUME YOUR MATCH</small></span></button><button class="outline-button full" id="leave-button">LEAVE MATCH</button></div>
+    </section>
+
+    <section class="overlay hidden" id="results-overlay">
+      <div class="dialog results-dialog">
+        <div class="eyebrow"><span></span> SHIFT COMPLETE</div><h2 id="results-heading">NICE RUN.</h2><p id="results-copy">The depot has a new top runner.</p>
+        <div class="result-stats"><div><small>YOUR SCORE</small><b id="result-score">0</b></div><div><small>DELIVERIES</small><b id="result-deliveries">0</b></div><div><small>STOLEN</small><b id="result-stolen">0</b></div></div>
+        <div class="result-board" id="result-board"></div>
+        <div class="reward-strip"><span>SHIFT PAY</span><b id="reward-xp">+0 XP</b><b id="reward-coins">+0 COINS</b></div>
+        <div class="results-buttons"><button class="primary-button" id="again-button"><span class="play-triangle">↻</span><span><b>RUN IT BACK</b><small>ANOTHER QUICK MATCH</small></span></button><button class="outline-button" id="results-home-button">MAIN MENU</button></div>
+        <button class="reward-ad-button" id="reward-ad-button">DOUBLE YOUR COINS <span>WATCH REWARDED AD</span></button>
+      </div>
+    </section>
+
+    <section class="overlay hidden" id="modal-overlay">
+      <div class="dialog modal-dialog"><button class="modal-close" id="modal-close">×</button><div id="modal-content"></div></div>
+    </section>
+
+    <section class="loading-screen" id="loading-screen">
+      <div class="loading-brand">PARCEL<span>PANIC</span></div>
+      <div class="loading-track"><i id="loading-progress"></i></div>
+      <small id="loading-status">GETTING THE DEPOT READY…</small>
+    </section>
+
+    <div class="sdk-status" id="sdk-status">CONNECTING TO CRAZYGAMES…</div>
+  </main>
+  <script src="./src/crazygames.js"></script>
+  <script src="./src/game.js"></script>
+</body>
+</html>
