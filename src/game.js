@@ -1409,6 +1409,12 @@
 
     closeModal() {
       $('modal-overlay').classList.add('hidden');
+      if (this.resumeAfterModal && this.state === 'paused') {
+        this.resumeAfterModal = false;
+        this.resume();
+      } else {
+        this.resumeAfterModal = false;
+      }
     }
 
     openHowTo() {
@@ -1424,6 +1430,8 @@
     }
 
     openSettings() {
+      this.resumeAfterModal = this.state === 'playing';
+      if (this.resumeAfterModal) this.pause();
       const s = this.profile.settings;
       this.openModal(
         '<div class="eyebrow"><span></span> PERSONALISE YOUR RUN</div><h2>SETTINGS</h2>' +
