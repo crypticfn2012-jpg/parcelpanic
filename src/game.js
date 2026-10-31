@@ -112,7 +112,7 @@
         const Ctx = window.AudioContext || window.webkitAudioContext;
         if (Ctx) this.context = new Ctx();
       }
-      if (this.context && this.context.state === 'suspended') this.context.resume();
+      if (!this.sdkMuted && this.context && this.context.state === 'suspended') this.context.resume();
     }
     setSdkMute(muted) {
       this.sdkMuted = !!muted;
