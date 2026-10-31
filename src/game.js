@@ -1678,8 +1678,9 @@
       let jump = false;
       let sprint = false;
       if (target) {
-        const tx = target.x - bot.position.x;
-        const tz = target.z - bot.position.z;
+        const targetPosition = target.position || target;
+        const tx = targetPosition.x - bot.position.x;
+        const tz = targetPosition.z - bot.position.z;
         const length = Math.hypot(tx, tz) || 1;
         ix = tx / length;
         iz = tz / length;
