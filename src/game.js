@@ -1228,6 +1228,10 @@
 
     placeLobbyRunners() {
       this.runners.forEach((runner, i) => {
+        runner.carrying = null;
+        runner.velocity.set(0, 0, 0);
+        runner.alive = true;
+        runner.protection = 0;
         runner.position.set(i === 0 ? 0 : 45 + i * 2, -20, i === 0 ? 0 : 45);
         runner.group.visible = i === 0;
       });
@@ -1342,6 +1346,7 @@
       $('pause-overlay').classList.add('hidden');
       $('results-overlay').classList.add('hidden');
       $('menu-screen').classList.remove('hidden');
+      this.parcels.reset('survival');
       this.placeLobbyRunners();
       this.arena.build(this.mapId, this.mode);
       this.updateCamera(0, true);
