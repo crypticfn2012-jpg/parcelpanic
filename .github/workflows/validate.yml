@@ -26,6 +26,8 @@ jobs:
         run: |
           node --check src/game.js
           node --check src/crazygames.js
+      - name: Check UI, modes, maps and SDK wiring
+        run: node scripts/validate.js
       - name: Check required game entry points
         run: |
           test -s index.html
