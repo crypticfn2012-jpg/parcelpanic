@@ -8,14 +8,35 @@ const { chromium } = require('playwright');
   });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const runtimeErrors = [];
+  const consoleErrors = [];
+  const failedRequests = [];
   page.on('pageerror', (error) => runtimeErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  page.on('requestfailed', (request) => failedRequests.push(request.url() + ' :: ' + (request.failure()?.errorText || 'failed')));
 
   try {
     await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForFunction(() => {
+    const loadState = await page.waitForFunction(() => {
       const loading = document.getElementById('loading-screen');
-      return loading && loading.classList.contains('done');
-    }, { timeout: 60000 });
+      const status = document.getElementById('loading-status');
+      if (loading && loading.classList.contains('done')) return 'ready';
+      if (status && status.textContent.includes('COULD NOT LOAD')) return 'failed';
+      return null;
+    }, null, { timeout: 45000 }).catch(() => 'timeout');
+
+    if (loadState !== 'ready') {
+      const diagnostics = await page.evaluate(() => ({
+        loadingClass: document.getElementById('loading-screen')?.className,
+        loadingStatus: document.getElementById('loading-status')?.textContent,
+        errorText: document.querySelector('#loading-screen small[style]')?.textContent,
+        sdkLoaded: !!(window.CrazyGames && window.CrazyGames.SDK),
+        sdkEnvironment: window.CrazyGames?.SDK?.environment || null
+      }));
+      console.error('Browser startup diagnostics:', JSON.stringify({ loadState, diagnostics, runtimeErrors, consoleErrors, failedRequests }, null, 2));
+      throw new Error('Game startup did not complete: ' + loadState);
+    }
 
     assert.equal(await page.locator('#menu-screen').isVisible(), true, 'main menu should be visible');
     assert.equal(await page.locator('.mode-card').count(), 4, 'all four mode cards should exist');
