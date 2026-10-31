@@ -1196,6 +1196,7 @@
       $('pause-button').addEventListener('click', () => this.pause());
       $('resume-button').addEventListener('click', () => this.resume());
       $('sound-button').addEventListener('click', () => this.toggleSound());
+      $('fullscreen-button').addEventListener('click', () => this.toggleFullscreen());
       $('settings-button').addEventListener('click', () => this.openSettings());
       $('how-button').addEventListener('click', () => this.openHowTo());
       $('modal-close').addEventListener('click', () => this.closeModal());
@@ -1358,6 +1359,15 @@
       $('pause-overlay').classList.add('hidden');
       this.audio.unlock();
       window.CrazyIntegration.startGameplay();
+    }
+
+    async toggleFullscreen() {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else if ($('app').requestFullscreen) await $('app').requestFullscreen();
+      } catch (error) {
+        console.info('[Parcel Panic] Fullscreen is unavailable:', error);
+      }
     }
 
     toggleSound() {
