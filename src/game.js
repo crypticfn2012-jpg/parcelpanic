@@ -1585,10 +1585,18 @@
       if (this.mode === 'survival') {
         const radius = Math.max(0, this.safeRadius - 2.5);
         const d = Math.hypot(bot.position.x, bot.position.z);
-        if (d > radius * 0.76) target = { x: 0, z: 0 };
-        else {
-          const enemy = this.runners.find((r) => r !== bot && r.alive && (this.mode !== 'team' || r.team !== bot.team) && distance(r, bot) < 5);
-          if (enemy) target = { x: bot.position.x + (bot.position.x - enemy.position.x) * 1.4, z: bot.position.z + (bot.position.z - enemy.position.z) * 1.4 };
+        if (d > radius * 0.76) {
+          target = { x: 0, z: 0 };
+        } else {
+          const enemy = this.runners.find((r) => r !== bot && r.alive && distance(r, bot) < 5);
+          if (enemy) {
+            target = { x: bot.position.x + (bot.position.x - enemy.position.x) * 1.4, z: bot.position.z + (bot.position.z - enemy.position.z) * 1.4 };
+          } else if (bot.think <= 0 || !bot.target || !bot.target.survivalWaypoint) {
+            const angle = Math.random() * Math.PI * 2;
+            const roam = Math.random() * radius * 0.62;
+            bot.target = { x: Math.cos(angle) * roam, z: Math.sin(angle) * roam, survivalWaypoint: true };
+            bot.think = 1.0 + Math.random() * 1.8;
+          }
         }
       } else if (bot.carrying) {
         target = this.nearestZone(bot);
