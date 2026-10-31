@@ -18,13 +18,15 @@ const { chromium } = require('playwright');
 
   try {
     await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-    const loadState = await page.waitForFunction(() => {
+    const loadHandle = await page.waitForFunction(() => {
       const loading = document.getElementById('loading-screen');
       const status = document.getElementById('loading-status');
       if (loading && loading.classList.contains('done')) return 'ready';
       if (status && status.textContent.includes('COULD NOT LOAD')) return 'failed';
       return null;
-    }, null, { timeout: 45000 }).catch(() => 'timeout');
+    }, null, { timeout: 45000 }).catch(() => null);
+    const loadState = loadHandle ? await loadHandle.jsonValue() : 'timeout';
+    if (loadHandle) await loadHandle.dispose();
 
     if (loadState !== 'ready') {
       const diagnostics = await page.evaluate(() => ({
