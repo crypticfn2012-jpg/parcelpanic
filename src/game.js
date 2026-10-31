@@ -1221,6 +1221,7 @@
       $('leave-button').addEventListener('click', () => this.returnMenu());
       $('pause-button').addEventListener('click', () => this.pause());
       $('resume-button').addEventListener('click', () => this.resume());
+      $('pause-settings-button').addEventListener('click', () => this.openSettings());
       $('sound-button').addEventListener('click', () => this.toggleSound());
       $('fullscreen-button').addEventListener('click', () => this.toggleFullscreen());
       $('settings-button').addEventListener('click', () => this.openSettings());
@@ -1351,6 +1352,7 @@
       this.input.enable(true);
       this.state = 'playing';
       $('menu-screen').classList.add('hidden');
+      $('topbar').classList.add('hidden');
       $('game-hud').classList.remove('hidden');
       $('pause-overlay').classList.add('hidden');
       $('results-overlay').classList.add('hidden');
@@ -1368,6 +1370,7 @@
       $('game-hud').classList.add('hidden');
       $('pause-overlay').classList.add('hidden');
       $('results-overlay').classList.add('hidden');
+      $('topbar').classList.remove('hidden');
       $('menu-screen').classList.remove('hidden');
       this.parcels.reset('survival');
       this.placeLobbyRunners();
