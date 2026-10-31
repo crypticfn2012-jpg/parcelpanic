@@ -1535,7 +1535,7 @@
         { id: 'speed', title: 'SPEED BOOST', copy: 'Everyone gets a burst of speed.', duration: 12 },
         { id: 'rain', title: 'PACKAGE RAIN', copy: 'Extra parcels have dropped.', duration: 10 },
         { id: 'lowg', title: 'LOW GRAVITY', copy: 'Floaty jumps for a short time.', duration: 12 }
-      ];
+      ].filter((event) => this.mode !== 'gold' || event.id !== 'rain');
       this.event = choices[Math.floor(Math.random() * choices.length)];
       this.eventTime = this.event.duration;
       if (this.event.id === 'rain') {
@@ -1826,8 +1826,14 @@
         if (this.mode === 'team') return this.teamScores[b.team] - this.teamScores[a.team] || b.score - a.score;
         return b.score - a.score || b.deliveries - a.deliveries;
       });
+      const teamTie = this.mode === 'team' && this.teamScores[this.player.team] === this.teamScores[1 - this.player.team];
       const teamWin = this.mode === 'team' && this.teamScores[this.player.team] > this.teamScores[1 - this.player.team];
-      const won = this.mode === 'team' ? teamWin : this.mode === 'survival' ? this.player.alive && ranking[0] === this.player : ranking[0] === this.player;
+      const survivalDraw = this.mode === 'survival' && this.runners.filter((runner) => runner.alive).length > 1;
+      const won = this.mode === 'team'
+        ? teamWin
+        : this.mode === 'survival'
+          ? this.player.alive && ranking[0] === this.player && !survivalDraw
+          : ranking[0] === this.player;
       const xp = Math.round(34 + this.player.score * 0.42 + (won ? 65 : 0) + this.player.deliveries * 7);
       const coins = Math.round(18 + this.player.score * 0.18 + (won ? 48 : 0));
       this.profile.xp += xp;
@@ -1845,12 +1851,18 @@
       } else this.audio.play('deliver');
       $('game-hud').classList.add('hidden');
       $('results-overlay').classList.remove('hidden');
-      $('results-heading').textContent = won ? (this.mode === 'survival' ? 'LAST RUNNER!' : 'YOU OWNED THE DEPOT.') : (ranking[0].name + ' WINS THE SHIFT.');
+      $('results-heading').textContent = teamTie || survivalDraw
+        ? (teamTie ? 'CREWS DRAW.' : 'SURVIVORS DRAW.')
+        : won
+          ? (this.mode === 'survival' ? 'LAST RUNNER!' : this.mode === 'team' ? 'YOUR CREW WINS!' : 'YOU OWNED THE DEPOT.')
+          : (ranking[0].name + ' WINS THE SHIFT.');
       $('results-copy').textContent = this.mode === 'survival'
         ? (this.player.alive ? 'You made it through the whole shift.' : 'You were eliminated. Watch the replay and take another run.')
         : this.mode === 'team'
-          ? 'Your crew scored ' + this.teamScores[this.player.team] + ' points. The rival crew scored ' + this.teamScores[1 - this.player.team] + '.'
-          : 'A fresh shift is waiting. Can you top the board next time?';
+          ? 'Your crew scored ' + this.teamScores[this.player.team] + ' points. The rival crew scored ' + this.teamScores[1 - this.player.team] + '.' + (teamTie ? ' It is a draw.' : '')
+          : this.mode === 'survival' && survivalDraw
+            ? 'Time expired with multiple runners still inside the safe zone.'
+            : 'A fresh shift is waiting. Can you top the board next time?';
       $('result-score').textContent = this.player.score;
       $('result-deliveries').textContent = this.player.deliveries;
       $('result-stolen').textContent = this.player.stolen;
