@@ -547,6 +547,7 @@
       cfg.zones.forEach((zone, index) => {
         const padMat = new THREE.MeshStandardMaterial({ color: index ? 0x4d8de1 : 0x2e8c78, emissive: index ? 0x15385e : 0x0c4337, emissiveIntensity: 0.45, roughness: 0.42 });
         const pad = this.cylinder(zone.x, 0.09, zone.z, zone.r + 0.3, zone.r + 0.3, 0.18, index ? 0x4d8de1 : 0x4bd4be, 32);
+        pad.material.dispose();
         pad.material = padMat;
         const torus = new THREE.Mesh(
           new THREE.TorusGeometry(zone.r, 0.15, 10, 56),
@@ -560,14 +561,6 @@
         this.root.add(light);
         this.zones.push({ x: zone.x, z: zone.z, r: zone.r, team: mode === 'team' ? index : null, torus, light });
       });
-
-      for (const side of [-1, 1]) {
-        const railColor = mapId === 'tropical' ? 0xe8d19d : 0x9bb3b9;
-        this.box(side * 36, 0.42, 0, 0.3, 0.8, 72, railColor);
-        this.box(0, 0.42, side * 36, 72, 0.8, 0.3, railColor);
-        this.box(side * 36, 0.88, 0, 0.12, 0.1, 72, cfg.accent, { emissive: cfg.accent, glow: 0.35, shadow: false });
-        this.box(0, 0.88, side * 36, 72, 0.1, 0.12, cfg.accent, { emissive: cfg.accent, glow: 0.35, shadow: false });
-      }
 
       if (mode === 'survival') this.createSafeRing();
       this.deliveryObjects = this.root.children.filter((child) => child.isMesh && child.geometry && child.geometry.type === 'TorusGeometry');
