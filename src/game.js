@@ -1588,8 +1588,21 @@
       } else runner.grounded = false;
 
       if (runner.position.y < -10) {
-        if (this.mode === 'survival') this.eliminate(runner, 'FELL');
-        else runner.reset(runner.team === 0 ? -20 : 20, runner.team === 0 ? 22 : -22);
+        if (this.mode === 'survival') {
+          this.eliminate(runner, 'FELL');
+        } else {
+          const spawnPoints = this.findSpawnPositions();
+          const spawn = spawnPoints[Math.max(0, this.runners.indexOf(runner))] || { x: 0, z: 24 };
+          runner.position.set(spawn.x, 0, spawn.z);
+          runner.velocity.set(0, 0, 0);
+          runner.grounded = true;
+          runner.jumpCount = 0;
+          runner.protection = 2.6;
+          runner.stun = 0;
+          runner.stuckTime = 0;
+          if (runner.carrying) this.parcels.drop(runner, new THREE.Vector3(0, 0, -1), false);
+          if (runner === this.player) this.showToast('BACK IN THE RUN', 'Your score is safe. Get back to the drop.', 'good');
+        }
       }
       runner.animate(Math.hypot(runner.velocity.x, runner.velocity.z) > 0.2, delta);
       if (runner.carrying) {
