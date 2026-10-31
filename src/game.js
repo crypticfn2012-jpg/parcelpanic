@@ -112,13 +112,16 @@
         const Ctx = window.AudioContext || window.webkitAudioContext;
         if (Ctx) this.context = new Ctx();
       }
-      if (!this.sdkMuted && this.context && this.context.state === 'suspended') this.context.resume();
+      if (!this.sdkMuted && this.context && this.context.state === 'suspended') {
+        const resume = this.context.resume();
+        if (resume && resume.catch) resume.catch(() => {});
+      }
     }
     setSdkMute(muted) {
       this.sdkMuted = !!muted;
       if (this.context) {
-        if (this.sdkMuted) this.context.suspend();
-        else if (this.context.state === 'suspended') this.context.resume();
+        const action = this.sdkMuted ? this.context.suspend() : (this.context.state === 'suspended' ? this.context.resume() : null);
+        if (action && action.catch) action.catch(() => {});
       }
     }
     play(kind) {
