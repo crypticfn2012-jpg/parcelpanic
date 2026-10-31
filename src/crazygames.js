@@ -68,7 +68,6 @@
       }
       sdk = window.CrazyGames.SDK;
       await sdk.init();
-      if (sdk.game && typeof sdk.game.loadingStart === 'function') safeCall(sdk.game.loadingStart.bind(sdk.game));
       environment = sdk.environment || 'disabled';
       ready = environment !== 'disabled';
 
@@ -77,6 +76,8 @@
         environment = 'standalone';
         return { ready: false, environment, user: null, profile: localRead() };
       }
+
+      if (sdk.game && typeof sdk.game.loadingStart === 'function') safeCall(sdk.game.loadingStart.bind(sdk.game));
 
       try {
         const accountAvailable = await sdk.user.isUserAccountAvailable();
