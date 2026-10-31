@@ -353,10 +353,17 @@
       this.config = MAPS.neon;
     }
     clear() {
-      while (this.root.children.length) {
-        const child = this.root.children.pop();
-        child.parent = null;
-      }
+      const geometries = new Set();
+      const materials = new Set();
+      this.root.traverse((object) => {
+        if (object.geometry) geometries.add(object.geometry);
+        if (object.material) {
+          const list = Array.isArray(object.material) ? object.material : [object.material];
+          list.forEach((material) => materials.add(material));
+        }
+      });
+      geometries.forEach((geometry) => geometry.dispose());
+      materials.forEach((material) => material.dispose());
       this.root.clear();
       this.colliders = [];
       this.zones = [];
