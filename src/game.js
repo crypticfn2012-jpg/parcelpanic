@@ -815,6 +815,7 @@
     }
     makeParcel(slot) {
       const group = new THREE.Group();
+      group.visible = false;
       const material = new THREE.MeshStandardMaterial({ color: 0xc69b6d, roughness: 0.42, metalness: 0.05 });
       const tape = new THREE.MeshStandardMaterial({ color: 0xf2e6ca, roughness: 0.5 });
       const dark = new THREE.MeshStandardMaterial({ color: 0x293c48, roughness: 0.72 });
