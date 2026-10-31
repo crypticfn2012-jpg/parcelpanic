@@ -25,6 +25,14 @@
     return undefined;
   };
 
+  const withTimeout = (promise, milliseconds, label) => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = window.setTimeout(() => reject(new Error(label + ' timed out')), milliseconds);
+    });
+    return Promise.race([Promise.resolve(promise), timeout]).finally(() => window.clearTimeout(timer));
+  };
+
   const localRead = () => {
     try {
       const current = localStorage.getItem(SAVE_KEY);
@@ -67,7 +75,7 @@
         throw new Error('CrazyGames SDK script is unavailable');
       }
       sdk = window.CrazyGames.SDK;
-      await sdk.init();
+      await withTimeout(sdk.init(), 8000, 'CrazyGames SDK initialization');
       environment = sdk.environment || 'disabled';
       ready = environment !== 'disabled';
 
@@ -83,7 +91,9 @@
         const accountAvailable = typeof sdk.user.isUserAccountAvailable === 'function'
           ? await sdk.user.isUserAccountAvailable()
           : !!sdk.user.isUserAccountAvailable;
-        if (accountAvailable && typeof sdk.user.getUser === 'function') user = await sdk.user.getUser();
+        if (accountAvailable && typeof sdk.user.getUser === 'function') {
+          user = await withTimeout(sdk.user.getUser(), 1800, 'CrazyGames user lookup');
+        }
       } catch (error) {
         console.info('[Parcel Panic] Guest session; no account profile available.');
       }
