@@ -61,3 +61,14 @@ For production submission:
 ## Validation
 
 GitHub Actions checks JavaScript syntax on every push. Browser playtesting and CrazyGames portal verification are still required before release.
+
+
+## GitHub Pages preview
+
+To publish a browser preview from this repository:
+
+1. Open **Settings → Pages** and set the source to **GitHub Actions**.
+2. Open **Actions → Parcel Panic validation → Run workflow**.
+3. The workflow runs the JavaScript checks and then deploys the static site.
+
+The deploy job is manual so ordinary code pushes can validate without failing when Pages has not yet been enabled.
