@@ -37,7 +37,7 @@
         [18, 5, 5, 5, 2.3], [-5, 11, 7, 2.2, 1.8], [7, 13, 6, 2.2, 1.8],
         [-24, -9, 3, 3, 2.1], [25, -5, 3, 3, 2.2], [0, 21, 3.6, 3.6, 2.6]
       ],
-      zones: [{ x: 0, z: -31, r: 5.4 }, { x: 0, z: 31, r: 5.4 }],
+      zones: [{ x: 0, z: 31, r: 5.4 }, { x: 0, z: -31, r: 5.4 }],
       skyline: 0x496d7b
     },
     tropical: {
@@ -53,7 +53,7 @@
         [19, 1, 4, 8, 2.1], [-6, 12, 5, 3, 1.7], [7, 11, 5, 3, 1.7],
         [0, -5, 7, 3, 1.1], [-25, 23, 4, 4, 2.2], [25, 23, 4, 4, 2.2]
       ],
-      zones: [{ x: -25, z: -24, r: 5.2 }, { x: 25, z: 24, r: 5.2 }],
+      zones: [{ x: 25, z: 24, r: 5.2 }, { x: -25, z: -24, r: 5.2 }],
       skyline: 0x477d78
     },
     factory: {
@@ -69,7 +69,7 @@
         [19, 1, 4, 8, 3.1], [-6, 13, 8, 3, 2.2], [7, 13, 8, 3, 2.2],
         [-25, -12, 4, 4, 2.8], [25, -12, 4, 4, 2.8], [0, -1, 4, 7, 2.5]
       ],
-      zones: [{ x: -26, z: -25, r: 5.2 }, { x: 26, z: 25, r: 5.2 }],
+      zones: [{ x: 26, z: 25, r: 5.2 }, { x: -26, z: -25, r: 5.2 }],
       skyline: 0x5b6c71
     },
     skyfall: {
@@ -85,7 +85,7 @@
         [19, 2, 6, 6, 2.5], [-5, 14, 7, 5, 2.3], [7, 14, 7, 5, 2.3],
         [-27, -27, 6, 5, 2], [27, -27, 6, 5, 2], [-27, 27, 6, 5, 2], [27, 27, 6, 5, 2]
       ],
-      zones: [{ x: -25, z: -24, r: 5 }, { x: 25, z: 24, r: 5 }],
+      zones: [{ x: 25, z: 24, r: 5 }, { x: -25, z: -24, r: 5 }],
       skyline: 0x60749a
     }
   };
@@ -1262,6 +1262,40 @@
       this.refreshProfile();
     }
 
+    findSpawnPositions() {
+      const chosen = [];
+      const teamMode = this.mode === 'team';
+      for (let slot = 0; slot < this.runners.length; slot++) {
+        const team = teamMode ? slot % 2 : null;
+        let found = null;
+        const preferredAngle = team === null ? (slot / this.runners.length) * Math.PI * 2 : (team === 0 ? 0 : Math.PI);
+        const lateralBias = teamMode ? ((Math.floor(slot / 2) - 1.5) * 0.22) : 0;
+        for (const radius of [26, 29, 23, 20, 17]) {
+          for (let step = 0; step < 80; step++) {
+            const angle = preferredAngle + lateralBias + step * 0.0785;
+            const x = Math.sin(angle) * radius;
+            const z = Math.cos(angle) * radius;
+            if (team === 0 && z < 7) continue;
+            if (team === 1 && z > -7) continue;
+            const blocked = this.arena.colliders.some((box) =>
+              Math.abs(x - box.x) < box.w / 2 + 1.1 && Math.abs(z - box.z) < box.d / 2 + 1.1
+            );
+            if (blocked) continue;
+            if (chosen.some((point) => Math.hypot(point.x - x, point.z - z) < 3.6)) continue;
+            found = { x, z };
+            break;
+          }
+          if (found) break;
+        }
+        if (!found) {
+          const angle = preferredAngle + lateralBias;
+          found = { x: Math.sin(angle) * 14, z: Math.cos(angle) * 14 };
+        }
+        chosen.push(found);
+      }
+      return chosen;
+    }
+
     startMatch() {
       this.audio.unlock();
       this.audio.play('click');
@@ -1274,12 +1308,9 @@
       this.teamScores = [0, 0];
       this.safeRadius = 34;
       this.spectate = null;
-      const spawn = [
-        [-4, 25], [-23, 18], [-12, 25], [2, 25], [14, 24],
-        [24, 13], [23, -5], [-23, -8]
-      ];
+      const spawn = this.findSpawnPositions();
       this.runners.forEach((runner, index) => {
-        runner.reset(spawn[index][0], spawn[index][1]);
+        runner.reset(spawn[index].x, spawn[index].z);
         if (this.mode === 'team') runner.setTeam(index % 2);
         else runner.setTeam(null);
         runner.group.rotation.y = Math.atan2(-runner.position.x, -runner.position.z);
@@ -1603,7 +1634,7 @@
       bot.stuckTime += delta;
       const moved = Math.hypot(bot.position.x - bot.lastPosition.x, bot.position.z - bot.lastPosition.z);
       if (moved > 0.15) bot.stuckTime = 0;
-      bot.lastPosition.set(bot.position.x, bot.position.z, 0);
+      bot.lastPosition.set(bot.position.x, 0, bot.position.z);
       if (bot.stuckTime > 1.2) {
         const side = Math.random() < 0.5 ? -1 : 1;
         ix = clamp(ix + side * 0.85, -1, 1);
