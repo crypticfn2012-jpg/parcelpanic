@@ -1158,6 +1158,9 @@
         const stored = sdkState.profile || window.CrazyIntegration.load();
         if (stored) this.profile = this.mergeProfile(stored);
         this.audio.profile = this.profile;
+        if (sdkState.ready && window.CrazyGames && window.CrazyGames.SDK.game && window.CrazyGames.SDK.game.settings) {
+          this.audio.setSdkMute(!!window.CrazyGames.SDK.game.settings.muteAudio);
+        }
         const user = sdkState.user || window.CrazyIntegration.getUser();
         if (user && user.username) $('profile-name').textContent = user.username.slice(0, 16).toUpperCase();
         $('sdk-status').textContent = sdkState.ready ? 'CRAZYGAMES SDK · ' + sdkState.environment.toUpperCase() : 'PRACTICE BUILD · LOCAL PROFILE';
