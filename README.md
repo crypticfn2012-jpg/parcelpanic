@@ -2,7 +2,7 @@
 
 **Steal. Deliver. Survive.**
 
-A stylised 3D browser party game built with Three.js. This repository is the active project.
+A stylised 3D browser party game built with the locally vendored Three.js r128 runtime. This repository is the active project.
 
 ## Run locally
 
@@ -54,6 +54,8 @@ For production submission:
 ## Files
 
 - `index.html`: entry point and game UI.
+- `vendor/three-r128.min.js`: pinned Three.js r128 runtime (MIT licensed), served locally to avoid CDN startup failures.
+- `vendor/THREEJS-LICENSE.txt`: upstream Three.js MIT license.
 - `src/game.js`: Three.js arena, movement, AI, parcels, modes and match flow.
 - `src/style.css`: responsive visual system and HUD.
 - `src/crazygames.js`: SDK v3 wrapper, persistence fallback and ad lifecycle.
