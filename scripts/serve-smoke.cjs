@@ -16,7 +16,7 @@ http.createServer((req, res) => {
   try {
     const pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
     const resolved = path.resolve(root, '.' + pathname);
-    if (!resolved.startsWith(root + path.sep) && resolved !== path.join(root, 'index.html')) {
+    if (resolved !== root && !resolved.startsWith(root + path.sep)) {
       res.writeHead(403).end('Forbidden');
       return;
     }
