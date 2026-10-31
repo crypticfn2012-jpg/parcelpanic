@@ -65,19 +65,20 @@ const { chromium } = require('playwright');
       assert.match(await page.locator('#hud-timer').textContent(), /^\d{2}:\d{2}$/, scenario.mode + ' timer should render');
       await page.waitForTimeout(250);
 
-      if (scenario.mode === 'team') {
-        await page.locator('#settings-button').click();
-        assert.equal(await page.locator('#modal-overlay').isVisible(), true, 'settings should open during a match');
-        assert.equal(await page.locator('#pause-overlay').isVisible(), true, 'opening settings should pause active gameplay');
-        await page.locator('#modal-close').click();
-        assert.equal(await page.locator('#pause-overlay').isVisible(), false, 'closing settings should resume gameplay');
-      }
-
       await page.keyboard.press('Escape');
       await page.waitForFunction(() => {
         const pause = document.getElementById('pause-overlay');
         return pause && !pause.classList.contains('hidden');
       }, { timeout: 5000 });
+
+      if (scenario.mode === 'team') {
+        await page.locator('#pause-settings-button').click();
+        assert.equal(await page.locator('#modal-overlay').isVisible(), true, 'settings should open from the pause menu');
+        assert.equal(await page.locator('#pause-overlay').isVisible(), true, 'settings should leave the match paused');
+        await page.locator('#modal-close').click();
+        assert.equal(await page.locator('#pause-overlay').isVisible(), true, 'closing settings should return to the pause menu');
+      }
+
       await page.locator('#resume-button').click();
       await page.waitForFunction(() => document.getElementById('pause-overlay').classList.contains('hidden'), { timeout: 5000 });
 
