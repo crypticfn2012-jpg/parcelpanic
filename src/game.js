@@ -98,7 +98,7 @@
 
   const clone = (value) => JSON.parse(JSON.stringify(value));
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+  const distance = (a, b) => { const pa = a.position || a; const pb = b.position || b; return Math.hypot(pa.x - pb.x, pa.z - pb.z); };
   const hex = (value) => '#' + value.toString(16).padStart(6, '0');
 
   class AudioSystem {
@@ -203,6 +203,24 @@
         }
       };
       this.onPointerLock = () => { this.pointerLocked = document.pointerLockElement === this.canvas; };
+      this.touchLookId = null;
+      this.touchLookLast = { x: 0, y: 0 };
+      this.onTouchLookDown = (event) => {
+        if (!this.enabled || event.pointerType !== 'touch' || event.clientX < innerWidth * 0.42 || event.target.closest('.touch-actions,.joystick,.pause-button')) return;
+        this.touchLookId = event.pointerId;
+        this.touchLookLast.x = event.clientX;
+        this.touchLookLast.y = event.clientY;
+      };
+      this.onTouchLookMove = (event) => {
+        if (this.touchLookId !== event.pointerId) return;
+        this.mouseX += event.clientX - this.touchLookLast.x;
+        this.mouseY += event.clientY - this.touchLookLast.y;
+        this.touchLookLast.x = event.clientX;
+        this.touchLookLast.y = event.clientY;
+      };
+      this.onTouchLookUp = (event) => {
+        if (this.touchLookId === event.pointerId) this.touchLookId = null;
+      };
       this.onCanvasDown = (event) => {
         if (!this.enabled || event.pointerType === 'touch') return;
         this.dragging = true;
@@ -218,9 +236,13 @@
       window.addEventListener('keydown', this.onKeyDown);
       window.addEventListener('keyup', this.onKeyUp);
       window.addEventListener('mousemove', this.onMouseMove);
+      window.addEventListener('pointermove', this.onTouchLookMove);
+      window.addEventListener('pointerup', this.onTouchLookUp);
+      window.addEventListener('pointercancel', this.onTouchLookUp);
       window.addEventListener('pointerup', this.onCanvasUp);
       document.addEventListener('pointerlockchange', this.onPointerLock);
       canvas.addEventListener('pointerdown', this.onCanvasDown);
+      canvas.addEventListener('pointerdown', this.onTouchLookDown);
       this.bindTouch();
     }
     bindTouch() {
@@ -310,6 +332,7 @@
         this.pressed.clear();
         this.axis.x = this.axis.y = 0;
         this.dragging = false;
+        this.touchLookId = null;
         if (this.pointerLocked && document.exitPointerLock) document.exitPointerLock();
         $('joystick-knob').style.transform = 'translate(0,0)';
       }
@@ -575,35 +598,36 @@
       return height;
     }
     resolve(entity) {
+      const position = entity.position || entity;
       const radius = 0.43;
       for (const b of this.colliders) {
-        if (entity.y > b.h + 0.25) continue;
-        const closestX = clamp(entity.x, b.minX, b.maxX);
-        const closestZ = clamp(entity.z, b.minZ, b.maxZ);
-        let dx = entity.x - closestX;
-        let dz = entity.z - closestZ;
+        if (position.y > b.h + 0.25) continue;
+        const closestX = clamp(position.x, b.minX, b.maxX);
+        const closestZ = clamp(position.z, b.minZ, b.maxZ);
+        const dx = position.x - closestX;
+        const dz = position.z - closestZ;
         const d2 = dx * dx + dz * dz;
         if (d2 < radius * radius) {
           if (d2 > 0.0001) {
             const d = Math.sqrt(d2);
             const push = radius - d;
-            entity.x += dx / d * push;
-            entity.z += dz / d * push;
+            position.x += dx / d * push;
+            position.z += dz / d * push;
           } else {
             const edges = [
-              [Math.abs(entity.x - b.minX), 'x', b.minX - radius],
-              [Math.abs(b.maxX - entity.x), 'x', b.maxX + radius],
-              [Math.abs(entity.z - b.minZ), 'z', b.minZ - radius],
-              [Math.abs(b.maxZ - entity.z), 'z', b.maxZ + radius]
+              [Math.abs(position.x - b.minX), 'x', b.minX - radius],
+              [Math.abs(b.maxX - position.x), 'x', b.maxX + radius],
+              [Math.abs(position.z - b.minZ), 'z', b.minZ - radius],
+              [Math.abs(b.maxZ - position.z), 'z', b.maxZ + radius]
             ].sort((a, b) => a[0] - b[0]);
-            entity[edges[0][1]] = edges[0][2];
+            position[edges[0][1]] = edges[0][2];
           }
-          entity.vx *= 0.35;
-          entity.vz *= 0.35;
+          entity.velocity.x *= 0.35;
+          entity.velocity.z *= 0.35;
         }
       }
-      entity.x = clamp(entity.x, -34.3, 34.3);
-      entity.z = clamp(entity.z, -34.3, 34.3);
+      position.x = clamp(position.x, -34.3, 34.3);
+      position.z = clamp(position.z, -34.3, 34.3);
     }
     update(delta) {
       this.time += delta;
@@ -622,6 +646,7 @@
       this.name = name;
       this.bot = bot;
       this.colour = colour;
+      this.baseColour = colour;
       this.team = 0;
       this.scene = scene;
       this.group = new THREE.Group();
@@ -730,12 +755,13 @@
       this.nameLabel = label;
     }
     setTeam(team) {
-      this.team = team;
+      this.team = team === null ? 0 : team;
       const colours = [0x46b9f0, 0xff765e];
-      if (this.uniform) this.uniform.color.setHex(colours[team]);
+      const colour = team === null ? this.baseColour : colours[team];
+      if (this.uniform) this.uniform.color.setHex(colour);
       if (this.teamRing) {
-        this.teamRing.material.color.setHex(colours[team]);
-        this.teamRing.material.emissive.setHex(colours[team]);
+        this.teamRing.material.color.setHex(colour);
+        this.teamRing.material.emissive.setHex(colour);
       }
     }
     reset(x, z) {
@@ -1059,7 +1085,7 @@
       this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, powerPreference: 'high-performance' });
       this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.6));
       this.renderer.setSize(innerWidth, innerHeight);
-      this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+      this.renderer.outputEncoding = THREE.sRGBEncoding;
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
       this.renderer.toneMappingExposure = 1.1;
       this.renderer.shadowMap.enabled = true;
@@ -1255,7 +1281,7 @@
       this.runners.forEach((runner, index) => {
         runner.reset(spawn[index][0], spawn[index][1]);
         if (this.mode === 'team') runner.setTeam(index % 2);
-        else runner.setTeam(0);
+        else runner.setTeam(null);
         runner.group.rotation.y = Math.atan2(-runner.position.x, -runner.position.z);
       });
       this.parcels.reset(this.mode);
@@ -1621,7 +1647,7 @@
         const outside = Math.hypot(runner.position.x, runner.position.z) > radius;
         runner.outsideTime = outside ? runner.outsideTime + delta : Math.max(0, runner.outsideTime - delta * 1.8);
         if (runner.outsideTime > 3.3) this.eliminate(runner, 'SAFE ZONE');
-        else if (runner === this.player && runner.outsideTime > 0.4) this.showToast('GET BACK INSIDE', 'The safe zone is closing.', 'warn');
+        else if (runner === this.player && runner.outsideTime > 0.4 && runner.outsideTime < 0.46) this.showToast('GET BACK INSIDE', 'The safe zone is closing.', 'warn');
       });
       const survivors = this.runners.filter((runner) => runner.alive);
       if (survivors.length <= 1) this.endMatch();
@@ -1655,12 +1681,10 @@
       this.remaining -= delta;
       this.updateEvents(delta);
 
-      if (this.mode === 'survival') {
-        this.updateSurvival(delta);
-      } else {
-        this.runners.forEach((runner) => {
-          if (!runner.alive) return;
-          if (runner === this.player) {
+      this.runners.forEach((runner) => {
+        if (!runner.alive) return;
+        if (runner === this.player) {
+          if (this.player.alive) {
             const mouse = this.input.consumeMouse();
             if (this.input.pointerLocked || this.input.dragging || this.input.coarse) {
               this.yaw -= mouse.x * 0.0024 * this.profile.settings.sensitivity;
@@ -1669,7 +1693,7 @@
             }
             const forward = new THREE.Vector3(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
             const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
-            let move = new THREE.Vector3();
+            const move = new THREE.Vector3();
             if (this.input.down('KeyW') || this.input.down('ArrowUp')) move.add(forward);
             if (this.input.down('KeyS') || this.input.down('ArrowDown')) move.sub(forward);
             if (this.input.down('KeyD') || this.input.down('ArrowRight')) move.add(right);
@@ -1678,9 +1702,14 @@
             const jump = this.input.consume('Space');
             const sprint = this.input.down('ShiftLeft') || this.input.down('ShiftRight');
             this.moveRunner(runner, delta, move.x, move.z, jump, sprint);
-          } else this.updateBot(runner, delta);
-        });
-        this.resolveRunnerBumps();
+          }
+        } else this.updateBot(runner, delta);
+      });
+
+      this.resolveRunnerBumps();
+      if (this.mode === 'survival') {
+        this.updateSurvival(delta);
+      } else {
         this.parcels.update(delta);
         this.runners.forEach((runner) => {
           if (!runner.alive || !runner.carrying) return;
@@ -1690,6 +1719,10 @@
         });
       }
 
+      if (this.state !== 'playing') return;
+      if (this.mode === 'survival' && !this.player.alive && (!this.spectate || !this.spectate.alive)) {
+        this.spectate = this.runners.find((runner) => runner.alive && runner !== this.player) || null;
+      }
       if (this.remaining <= 0) {
         this.remaining = 0;
         this.endMatch();
