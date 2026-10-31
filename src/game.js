@@ -681,12 +681,31 @@
     material(color, roughness = 0.65, metalness = 0.04) {
       return new THREE.MeshStandardMaterial({ color, roughness, metalness });
     }
+    capsule(radius, length, material, segments = 12) {
+      const group = new THREE.Group();
+      const cylinder = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, segments), material);
+      cylinder.castShadow = true;
+      cylinder.receiveShadow = true;
+      group.add(cylinder);
+      const capGeometry = new THREE.SphereGeometry(radius, segments, Math.max(8, segments - 2));
+      const top = new THREE.Mesh(capGeometry, material);
+      top.position.y = length / 2;
+      top.castShadow = true;
+      top.receiveShadow = true;
+      group.add(top);
+      const bottom = new THREE.Mesh(capGeometry, material);
+      bottom.position.y = -length / 2;
+      bottom.castShadow = true;
+      bottom.receiveShadow = true;
+      group.add(bottom);
+      return group;
+    }
     createModel() {
       const uniform = this.material(this.colour);
       const skin = this.material(0xf2c7a3, 0.8);
       const dark = this.material(0x293c48, 0.78);
       const accent = this.material(0xffd16c, 0.48, 0.1);
-      const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.76, 5, 10), uniform);
+      const body = this.capsule(0.42, 0.76, uniform, 16);
       body.position.y = 1.08;
       body.castShadow = true;
       this.group.add(body);
@@ -707,7 +726,7 @@
       this.arms = [];
       this.legs = [];
       for (const side of [-1, 1]) {
-        const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.42, 3, 8), uniform);
+        const arm = this.capsule(0.12, 0.42, uniform, 10);
         arm.position.set(side * 0.49, 1.21, 0.02);
         arm.rotation.z = side * -0.22;
         arm.castShadow = true;
@@ -716,7 +735,7 @@
         const hand = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 8), skin);
         hand.position.set(side * 0.52, 0.92, 0.02);
         this.group.add(hand);
-        const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.35, 3, 8), dark);
+        const leg = this.capsule(0.15, 0.35, dark, 10);
         leg.position.set(side * 0.2, 0.34, 0.02);
         leg.castShadow = true;
         this.group.add(leg);
