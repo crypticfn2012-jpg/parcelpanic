@@ -80,8 +80,10 @@
       if (sdk.game && typeof sdk.game.loadingStart === 'function') safeCall(sdk.game.loadingStart.bind(sdk.game));
 
       try {
-        const accountAvailable = await sdk.user.isUserAccountAvailable();
-        if (accountAvailable) user = await sdk.user.getUser();
+        const accountAvailable = typeof sdk.user.isUserAccountAvailable === 'function'
+          ? await sdk.user.isUserAccountAvailable()
+          : !!sdk.user.isUserAccountAvailable;
+        if (accountAvailable && typeof sdk.user.getUser === 'function') user = await sdk.user.getUser();
       } catch (error) {
         console.info('[Parcel Panic] Guest session; no account profile available.');
       }
