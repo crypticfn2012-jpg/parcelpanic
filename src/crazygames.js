@@ -12,7 +12,13 @@
 
   const safeCall = (fn, ...args) => {
     try {
-      if (typeof fn === 'function') return fn(...args);
+      if (typeof fn === 'function') {
+        const result = fn(...args);
+        if (result && typeof result.catch === 'function') result.catch((error) => {
+          console.warn('[Parcel Panic] CrazyGames SDK call failed:', error);
+        });
+        return result;
+      }
     } catch (error) {
       console.warn('[Parcel Panic] CrazyGames SDK call failed:', error);
     }
@@ -62,6 +68,7 @@
       }
       sdk = window.CrazyGames.SDK;
       await sdk.init();
+      if (sdk.game && typeof sdk.game.loadingStart === 'function') safeCall(sdk.game.loadingStart.bind(sdk.game));
       environment = sdk.environment || 'disabled';
       ready = environment !== 'disabled';
 
@@ -86,7 +93,7 @@
       }
 
       const profile = load();
-      if (sdk.game && sdk.game.loadingStop) safeCall(sdk.game.loadingStop.bind(sdk.game));
+      if (sdk.game && typeof sdk.game.loadingStop === 'function') safeCall(sdk.game.loadingStop.bind(sdk.game));
       return { ready: true, environment, user, profile };
     } catch (error) {
       sdk = null;
@@ -101,14 +108,11 @@
     if (ready && sdk && sdk.data) {
       try {
         const stored = sdk.data.getItem(SAVE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          writeLocal(parsed);
-          return parsed;
-        }
+        if (stored) return JSON.parse(stored);
       } catch (error) {
         console.warn('[Parcel Panic] CrazyGames save could not be read:', error);
       }
+      // One-time migration from the earlier local-only build into CrazyGames Data.
       const migrated = localRead();
       if (migrated) {
         save(migrated);
@@ -123,15 +127,15 @@
     const serialized = JSON.stringify(profile);
     if (serialized === lastSave) return true;
     lastSave = serialized;
-    writeLocal(profile);
     if (ready && sdk && sdk.data) {
       try {
         sdk.data.setItem(SAVE_KEY, serialized);
         return true;
       } catch (error) {
-        console.warn('[Parcel Panic] CrazyGames cloud save failed; local fallback retained:', error);
+        console.warn('[Parcel Panic] CrazyGames Data save failed; local fallback retained:', error);
       }
     }
+    writeLocal(profile);
     return true;
   }
 
