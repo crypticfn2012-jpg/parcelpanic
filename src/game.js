@@ -53,7 +53,7 @@
         [19, 1, 4, 8, 2.1], [-6, 12, 5, 3, 1.7], [7, 11, 5, 3, 1.7],
         [0, -5, 7, 3, 1.1], [-25, 23, 4, 4, 2.2], [25, 23, 4, 4, 2.2]
       ],
-      zones: [{ x: 25, z: 24, r: 5.2 }, { x: -25, z: -24, r: 5.2 }],
+      zones: [{ x: 0, z: 30, r: 5.2 }, { x: 0, z: -30, r: 5.2 }],
       skyline: 0x477d78
     },
     factory: {
@@ -69,7 +69,7 @@
         [19, 1, 4, 8, 3.1], [-6, 13, 8, 3, 2.2], [7, 13, 8, 3, 2.2],
         [-25, -12, 4, 4, 2.8], [25, -12, 4, 4, 2.8], [0, -1, 4, 7, 2.5]
       ],
-      zones: [{ x: 26, z: 25, r: 5.2 }, { x: -26, z: -25, r: 5.2 }],
+      zones: [{ x: 0, z: 30, r: 5.2 }, { x: 0, z: -30, r: 5.2 }],
       skyline: 0x5b6c71
     },
     skyfall: {
@@ -85,7 +85,7 @@
         [19, 2, 6, 6, 2.5], [-5, 14, 7, 5, 2.3], [7, 14, 7, 5, 2.3],
         [-27, -27, 6, 5, 2], [27, -27, 6, 5, 2], [-27, 27, 6, 5, 2], [27, 27, 6, 5, 2]
       ],
-      zones: [{ x: 25, z: 24, r: 5 }, { x: -25, z: -24, r: 5 }],
+      zones: [{ x: 0, z: 30, r: 5 }, { x: 0, z: -30, r: 5 }],
       skyline: 0x60749a
     }
   };
@@ -1282,7 +1282,8 @@
         let found = null;
         const preferredAngle = team === null ? (slot / this.runners.length) * Math.PI * 2 : (team === 0 ? 0 : Math.PI);
         const lateralBias = teamMode ? ((Math.floor(slot / 2) - 1.5) * 0.22) : 0;
-        for (const radius of [26, 29, 23, 20, 17]) {
+        const radii = teamMode ? [21, 24, 18, 27, 15] : [26, 29, 23, 20, 17];
+        for (const radius of radii) {
           for (let step = 0; step < 80; step++) {
             const angle = preferredAngle + lateralBias + step * 0.0785;
             const x = Math.sin(angle) * radius;
