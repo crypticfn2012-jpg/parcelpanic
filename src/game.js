@@ -1365,7 +1365,7 @@
         '<div class="how-item"><kbd>SPACE</kbd><b>Jump / double jump</b></div><div class="how-item"><kbd>SHIFT</kbd><b>Sprint</b></div>' +
         '<div class="how-item"><kbd>E</kbd><b>Pick up / steal</b></div><div class="how-item"><kbd>Q</kbd><b>Throw parcel</b></div>' +
         '<div class="how-item"><kbd>F</kbd><b>Push rivals</b></div><div class="how-item"><kbd>ESC</kbd><b>Pause</b></div></div>' +
-        '<p>Carry one parcel at a time. Rarer parcels are worth more but slow you down. Enter a delivery ring to score. In Team Delivery, use your team's coloured drop. In Last Runner Standing, keep inside the shrinking safe zone.</p>'
+        '<p>Carry one parcel at a time. Rarer parcels are worth more but slow you down. Enter a delivery ring to score. In Team Delivery, use your team&#39;s coloured drop. In Last Runner Standing, keep inside the shrinking safe zone.</p>'
       );
     }
 
